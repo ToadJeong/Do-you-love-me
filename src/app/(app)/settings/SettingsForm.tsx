@@ -84,7 +84,7 @@ export function SettingsForm({ profile, couple }: Props) {
     <div className="flex flex-col gap-8">
       {/* profile image */}
       <section className="flex items-center gap-4">
-        <div className="h-20 w-20 shrink-0 overflow-hidden rounded-full bg-neutral-100">
+        <div className="h-20 w-20 shrink-0 overflow-hidden rounded-full bg-neutral-100 dark:bg-neutral-800">
           {avatar ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={avatar} alt="" className="h-full w-full object-cover" />
@@ -98,7 +98,7 @@ export function SettingsForm({ profile, couple }: Props) {
           <button
             type="button"
             onClick={() => avatarInput.current?.click()}
-            className="inline-flex items-center gap-1.5 rounded-full border border-neutral-300 px-4 py-2 text-sm font-medium"
+            className="inline-flex items-center gap-1.5 rounded-full border border-neutral-300 px-4 py-2 text-sm font-medium dark:border-neutral-700"
           >
             <Upload size={15} /> 프로필 사진 변경
           </button>
@@ -137,8 +137,8 @@ export function SettingsForm({ profile, couple }: Props) {
         <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
           메인 배경 사진
         </label>
-        <div className="mt-2 overflow-hidden rounded-2xl border border-neutral-200">
-          <div className="relative h-40 w-full bg-neutral-100">
+        <div className="mt-2 overflow-hidden rounded-2xl border border-neutral-200 dark:border-neutral-800">
+          <div className="relative h-40 w-full bg-neutral-100 dark:bg-neutral-800">
             {bg ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={bg} alt="" className="h-full w-full object-cover" />

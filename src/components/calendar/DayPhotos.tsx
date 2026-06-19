@@ -76,7 +76,7 @@ export function DayPhotos({ dateISO }: { dateISO: string }) {
   return (
     <div className="mb-5">
       <div className="mb-2 flex items-center justify-between">
-        <span className="text-sm font-medium text-neutral-600">사진</span>
+        <span className="text-sm font-medium text-neutral-600 dark:text-neutral-300">사진</span>
         <button
           type="button"
           onClick={() => inputRef.current?.click()}

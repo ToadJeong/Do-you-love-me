@@ -57,7 +57,7 @@ export default function LoginPage() {
 
       <p className="mt-6 text-center text-sm text-neutral-500">
         아직 계정이 없나요?{" "}
-        <Link href="/signup" className="font-medium text-neutral-900 underline">
+        <Link href="/signup" className="font-medium text-neutral-900 underline dark:text-neutral-100">
           회원가입
         </Link>
       </p>

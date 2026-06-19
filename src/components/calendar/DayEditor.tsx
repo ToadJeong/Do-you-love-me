@@ -109,7 +109,7 @@ function EventRow({
           </span>
         </div>
         {ev.content && (
-          <p className="mt-1 whitespace-pre-wrap text-sm text-neutral-600">
+          <p className="mt-1 whitespace-pre-wrap text-sm text-neutral-600 dark:text-neutral-300">
             {ev.content}
           </p>
         )}

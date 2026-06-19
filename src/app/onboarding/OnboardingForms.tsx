@@ -45,7 +45,7 @@ export function OnboardingForms() {
 
       {tab === "create" ? (
         <form action={createAction} className="flex flex-col gap-4">
-          <label className="text-sm text-neutral-600">
+          <label className="text-sm text-neutral-600 dark:text-neutral-300">
             우리가 처음 만난 날
             <input
               name="start_date"
@@ -70,7 +70,7 @@ export function OnboardingForms() {
         </form>
       ) : (
         <form action={joinAction} className="flex flex-col gap-4">
-          <label className="text-sm text-neutral-600">
+          <label className="text-sm text-neutral-600 dark:text-neutral-300">
             파트너의 초대 코드
             <input
               name="code"

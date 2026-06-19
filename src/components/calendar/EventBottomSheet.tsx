@@ -20,7 +20,7 @@ export function EventBottomSheet({ date, onClose }: Props) {
         onClick={onClose}
         className="absolute inset-0 bg-black/40"
       />
-      <div className="relative max-h-[85dvh] w-full overflow-y-auto rounded-t-3xl bg-white p-5">
+      <div className="relative max-h-[85dvh] w-full overflow-y-auto rounded-t-3xl bg-white p-5 dark:bg-neutral-900">
         <DayEditor date={date} onClose={onClose} />
       </div>
     </div>
