@@ -1,0 +1,177 @@
+-- =====================================================================
+--  Do-You-Love-Me — Supabase schema
+--  Paste this whole file into the Supabase SQL Editor and run it.
+--
+--  Design goals:
+--   • 4 tables: couples, users, calendar_events, gallery_photos
+--   • Everything is scoped by couple_id so the app is multi-tenant
+--     (commercialization ready).
+--   • RLS is ON for every table; a user can only ever touch rows that
+--     belong to their own couple.
+--   • Deleting a couple cascades to all of its data.
+-- =====================================================================
+
+-- ---------------------------------------------------------------------
+-- 0. Extensions
+-- ---------------------------------------------------------------------
+create extension if not exists "pgcrypto";   -- for gen_random_uuid()
+
+-- ---------------------------------------------------------------------
+-- 1. Tables
+-- ---------------------------------------------------------------------
+
+-- couples : the tenant / D-Day anchor
+create table if not exists public.couples (
+  id          uuid primary key default gen_random_uuid(),
+  start_date  date not null,                       -- "처음 사귄 날" (D-Day base)
+  main_bg_url text,                                -- full-screen background image
+  created_at  timestamptz not null default now()
+);
+
+-- users : 1 row per authenticated person, linked to auth.users
+create table if not exists public.users (
+  id                uuid primary key
+                      references auth.users (id) on delete cascade,
+  couple_id         uuid
+                      references public.couples (id) on delete cascade,
+  nickname          text,
+  profile_image_url text,
+  created_at        timestamptz not null default now()
+);
+
+-- calendar_events : schedules / diaries / todos
+create table if not exists public.calendar_events (
+  id         uuid primary key default gen_random_uuid(),
+  couple_id  uuid not null
+               references public.couples (id) on delete cascade,
+  event_date date not null,
+  type       text not null default 'schedule'
+               check (type in ('schedule', 'diary', 'todo', 'anniversary')),
+  title      text,
+  content    text,
+  created_at timestamptz not null default now()
+);
+
+-- gallery_photos : pointers to heavy media stored in Cloudflare R2
+create table if not exists public.gallery_photos (
+  id           uuid primary key default gen_random_uuid(),
+  couple_id    uuid not null
+                 references public.couples (id) on delete cascade,
+  r2_image_url text not null,
+  uploaded_at  timestamptz not null default now()
+);
+
+-- Helpful indexes for the most common lookups (by couple / by date)
+create index if not exists calendar_events_couple_date_idx
+  on public.calendar_events (couple_id, event_date);
+create index if not exists gallery_photos_couple_idx
+  on public.gallery_photos (couple_id, uploaded_at desc);
+create index if not exists users_couple_idx
+  on public.users (couple_id);
+
+-- ---------------------------------------------------------------------
+-- 2. Helper: which couple does the current auth user belong to?
+--    SECURITY DEFINER so it can read public.users without tripping the
+--    users RLS policy (avoids recursive policy evaluation).
+-- ---------------------------------------------------------------------
+create or replace function public.current_couple_id()
+returns uuid
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select couple_id from public.users where id = auth.uid();
+$$;
+
+-- ---------------------------------------------------------------------
+-- 3. Enable Row Level Security on every table
+-- ---------------------------------------------------------------------
+alter table public.couples         enable row level security;
+alter table public.users           enable row level security;
+alter table public.calendar_events enable row level security;
+alter table public.gallery_photos  enable row level security;
+
+-- ---------------------------------------------------------------------
+-- 4. Policies
+-- ---------------------------------------------------------------------
+
+-- ===== couples =======================================================
+-- A user may read/update their own couple. Any authenticated user may
+-- create a couple (the row they then attach themselves to).
+drop policy if exists "couples_select_own" on public.couples;
+create policy "couples_select_own"
+  on public.couples for select
+  to authenticated
+  using (id = public.current_couple_id());
+
+drop policy if exists "couples_insert_authenticated" on public.couples;
+create policy "couples_insert_authenticated"
+  on public.couples for insert
+  to authenticated
+  with check (true);
+
+drop policy if exists "couples_update_own" on public.couples;
+create policy "couples_update_own"
+  on public.couples for update
+  to authenticated
+  using (id = public.current_couple_id())
+  with check (id = public.current_couple_id());
+
+drop policy if exists "couples_delete_own" on public.couples;
+create policy "couples_delete_own"
+  on public.couples for delete
+  to authenticated
+  using (id = public.current_couple_id());
+
+-- ===== users =========================================================
+-- A user can always see/edit their own row, and can also see their
+-- partner (same couple_id) so the app can render both profiles.
+drop policy if exists "users_select_self_or_partner" on public.users;
+create policy "users_select_self_or_partner"
+  on public.users for select
+  to authenticated
+  using (
+    id = auth.uid()
+    or (couple_id is not null and couple_id = public.current_couple_id())
+  );
+
+drop policy if exists "users_insert_self" on public.users;
+create policy "users_insert_self"
+  on public.users for insert
+  to authenticated
+  with check (id = auth.uid());
+
+drop policy if exists "users_update_self" on public.users;
+create policy "users_update_self"
+  on public.users for update
+  to authenticated
+  using (id = auth.uid())
+  with check (id = auth.uid());
+
+drop policy if exists "users_delete_self" on public.users;
+create policy "users_delete_self"
+  on public.users for delete
+  to authenticated
+  using (id = auth.uid());
+
+-- ===== calendar_events ==============================================
+-- Full CRUD limited to rows belonging to the caller's couple.
+drop policy if exists "calendar_events_all_own" on public.calendar_events;
+create policy "calendar_events_all_own"
+  on public.calendar_events for all
+  to authenticated
+  using (couple_id = public.current_couple_id())
+  with check (couple_id = public.current_couple_id());
+
+-- ===== gallery_photos ===============================================
+drop policy if exists "gallery_photos_all_own" on public.gallery_photos;
+create policy "gallery_photos_all_own"
+  on public.gallery_photos for all
+  to authenticated
+  using (couple_id = public.current_couple_id())
+  with check (couple_id = public.current_couple_id());
+
+-- =====================================================================
+--  Done.
+-- =====================================================================
