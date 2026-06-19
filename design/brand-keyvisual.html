@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Do you love me — Brand Key Visual</title>
+    <!-- Self-describing layout metadata for the Adobe Express exporter -->
+    <meta name="hz:slide-selector" content=".keyvisual" />
+    <meta name="hz:canvas-width" content="1080" />
+    <meta name="hz:canvas-height" content="1080" />
+    <link rel="stylesheet" href="https://use.typekit.net/olm4wgk.css" />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background: #efe3dc;
+      }
+
+      .keyvisual {
+        position: relative;
+        width: 1080px;
+        height: 1080px;
+        overflow: hidden;
+        background: radial-gradient(
+          120% 100% at 50% 8%,
+          #fff9f6 0%,
+          #fdeee9 42%,
+          #f7d9d4 100%
+        );
+        font-family: "josefin-sans", sans-serif;
+      }
+
+      /* faint decorative hearts */
+      .decor {
+        position: absolute;
+        opacity: 0.16;
+      }
+      .decor.tl {
+        top: -70px;
+        left: -60px;
+        width: 320px;
+        transform: rotate(-18deg);
+      }
+      .decor.br {
+        bottom: -90px;
+        right: -70px;
+        width: 380px;
+        transform: rotate(14deg);
+      }
+
+      .kicker {
+        position: absolute;
+        top: 118px;
+        left: 0;
+        width: 100%;
+        text-align: center;
+        font-family: "josefin-sans", sans-serif;
+        font-weight: 300;
+        font-size: 19px;
+        letter-spacing: 0.46em;
+        text-transform: uppercase;
+        color: #b07d7d;
+        text-indent: 0.46em;
+      }
+
+      .mark {
+        position: absolute;
+        top: 196px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 168px;
+        height: 168px;
+      }
+      .mark .ring {
+        position: absolute;
+        inset: 0;
+        border: 1.5px solid #e3a9aa;
+        border-radius: 50%;
+        opacity: 0.55;
+      }
+      .mark svg {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 96px;
+        height: 96px;
+      }
+
+      .stack {
+        position: absolute;
+        top: 430px;
+        left: 0;
+        width: 100%;
+        text-align: center;
+      }
+
+      .wordmark {
+        font-family: "playfair-display", serif;
+        font-weight: 700;
+        font-size: 96px;
+        line-height: 1.0;
+        color: #46272f;
+        letter-spacing: -0.01em;
+      }
+      .wordmark .q {
+        color: #c8546b;
+      }
+
+      .tagline {
+        margin-top: 26px;
+        font-family: "playfair-display", serif;
+        font-weight: 400;
+        font-style: italic;
+        font-size: 35px;
+        color: #8a5a62;
+      }
+
+      .badge {
+        margin: 40px auto 0;
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+        padding: 13px 30px;
+        border: 1.5px solid #d98994;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.45);
+      }
+      .badge .dday {
+        font-family: "playfair-display", serif;
+        font-weight: 700;
+        font-size: 26px;
+        color: #c8546b;
+        letter-spacing: 0.04em;
+      }
+      .badge .since {
+        font-family: "josefin-sans", sans-serif;
+        font-weight: 300;
+        font-size: 15px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: #9a7b72;
+      }
+
+      .features {
+        position: absolute;
+        top: 832px;
+        left: 0;
+        width: 100%;
+        text-align: center;
+        font-family: "josefin-sans", sans-serif;
+        font-weight: 300;
+        font-size: 20px;
+        letter-spacing: 0.34em;
+        text-transform: uppercase;
+        color: #a8847d;
+        text-indent: 0.34em;
+      }
+
+      /* palette strip */
+      .palette {
+        position: absolute;
+        bottom: 96px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 34px;
+      }
+      .swatch {
+        text-align: center;
+      }
+      .swatch .chip {
+        width: 78px;
+        height: 78px;
+        border-radius: 50%;
+        box-shadow: 0 6px 16px rgba(74, 43, 51, 0.16);
+      }
+      .swatch .name {
+        margin-top: 12px;
+        font-weight: 300;
+        font-size: 12px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: #8a6f68;
+      }
+      .swatch .hex {
+        margin-top: 3px;
+        font-weight: 300;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        color: #b49a93;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="keyvisual" data-canvas-width="1080" data-canvas-height="1080">
+      <!-- decorative outline hearts -->
+      <svg class="decor tl" viewBox="0 0 100 100" fill="none">
+        <path
+          d="M50 86 C50 86 14 61 14 37 C14 24 23 16 33 16 C41 16 46 21 50 28 C54 21 59 16 67 16 C77 16 86 24 86 37 C86 61 50 86 50 86 Z"
+          stroke="#d98994"
+          stroke-width="2"
+        />
+      </svg>
+      <svg class="decor br" viewBox="0 0 100 100" fill="none">
+        <path
+          d="M50 86 C50 86 14 61 14 37 C14 24 23 16 33 16 C41 16 46 21 50 28 C54 21 59 16 67 16 C77 16 86 24 86 37 C86 61 50 86 50 86 Z"
+          stroke="#c8546b"
+          stroke-width="2"
+        />
+      </svg>
+
+      <div class="kicker">Est. 2026 · Couple D-Day Diary</div>
+
+      <!-- logo mark -->
+      <div class="mark">
+        <div class="ring"></div>
+        <svg viewBox="0 0 100 100">
+          <defs>
+            <linearGradient id="heart" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#ef8f9b" />
+              <stop offset="100%" stop-color="#c8546b" />
+            </linearGradient>
+          </defs>
+          <path
+            d="M50 88 C50 88 12 61 12 36 C12 22 22 14 33 14 C41 14 47 19 50 26 C53 19 59 14 67 14 C78 14 88 22 88 36 C88 61 50 88 50 88 Z"
+            fill="url(#heart)"
+          />
+        </svg>
+      </div>
+
+      <!-- wordmark + tagline -->
+      <div class="stack">
+        <h1 class="wordmark">Do you love me<span class="q">?</span></h1>
+        <p class="tagline">Every day with you, counted in love.</p>
+
+        <div class="badge">
+          <span class="dday">D + 001</span>
+          <span class="since">since the day we met</span>
+        </div>
+      </div>
+
+      <div class="features">Home · Calendar · Diary · Gallery</div>
+
+      <!-- brand palette -->
+      <div class="palette">
+        <div class="swatch">
+          <div class="chip" style="background: #fdeee9"></div>
+          <div class="name">Blush Cream</div>
+          <div class="hex">#FDEEE9</div>
+        </div>
+        <div class="swatch">
+          <div class="chip" style="background: #ef8f9b"></div>
+          <div class="name">Petal Rose</div>
+          <div class="hex">#EF8F9B</div>
+        </div>
+        <div class="swatch">
+          <div class="chip" style="background: #c8546b"></div>
+          <div class="name">Love Red</div>
+          <div class="hex">#C8546B</div>
+        </div>
+        <div class="swatch">
+          <div class="chip" style="background: #46272f"></div>
+          <div class="name">Plum Ink</div>
+          <div class="hex">#46272F</div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
