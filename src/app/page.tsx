@@ -1,30 +1,53 @@
+import { redirect } from "next/navigation";
+import {
+  endOfMonth,
+  endOfWeek,
+  format,
+  startOfMonth,
+  startOfWeek,
+} from "date-fns";
 import { getCurrentUser } from "@/lib/auth";
+import { getCouple, getEventsInRange } from "@/lib/couples";
+import { Dday } from "@/components/home/Dday";
+import { MonthCalendar } from "@/components/calendar/MonthCalendar";
 import { signout } from "./(auth)/actions";
 
 /**
- * Temporary authenticated landing.
- * Phase 3 will replace this with the D-Day dashboard + calendar.
+ * Main home: D-Day dashboard + shared monthly calendar.
+ * Unconnected users are sent to onboarding first.
  */
 export default async function Home() {
   const { profile } = await getCurrentUser();
+  if (!profile?.couple_id) {
+    redirect("/onboarding");
+  }
+
+  const couple = await getCouple();
+  if (!couple) {
+    redirect("/onboarding");
+  }
+
+  // Fetch the events covering the current month's visible grid.
+  const now = new Date();
+  const from = format(startOfWeek(startOfMonth(now)), "yyyy-MM-dd");
+  const to = format(endOfWeek(endOfMonth(now)), "yyyy-MM-dd");
+  const events = await getEventsInRange(from, to);
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center gap-6 px-6 text-center">
-      <h1 className="text-2xl font-semibold tracking-tight">
-        {profile?.nickname ? `${profile.nickname}님, 환영해요 💕` : "환영해요 💕"}
-      </h1>
+    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-8 px-6 py-10">
+      <Dday startDate={couple.start_date} />
 
-      <div className="rounded-2xl border border-neutral-200 p-5 text-left text-sm text-neutral-600">
-        <p>
-          커플 연결 상태:{" "}
-          <span className="font-medium text-neutral-900">
-            {profile?.couple_id ? "연결됨" : "아직 연결되지 않음"}
-          </span>
+      <MonthCalendar initialEvents={events} />
+
+      <section className="rounded-2xl bg-neutral-50 p-4 text-sm">
+        <p className="font-medium text-neutral-700">파트너 초대 코드</p>
+        <p className="mt-1 break-all font-mono text-xs text-neutral-500">
+          {couple.id}
         </p>
-        <p className="mt-1 break-all text-xs text-neutral-400">
-          couple_id: {profile?.couple_id ?? "—"}
+        <p className="mt-1 text-xs text-neutral-400">
+          이 코드를 파트너에게 공유하면 같은 커플로 연결돼요.
         </p>
-      </div>
+      </section>
 
       <form action={signout}>
         <button

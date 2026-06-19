@@ -172,6 +172,86 @@ create policy "gallery_photos_all_own"
   using (couple_id = public.current_couple_id())
   with check (couple_id = public.current_couple_id());
 
+-- ---------------------------------------------------------------------
+-- 5. Couple connection RPCs
+--    Creating a couple has an RLS chicken-and-egg problem: right after the
+--    INSERT the caller still has couple_id = null, so the row-level SELECT
+--    policy would hide the new row and we couldn't read its id back.
+--    These SECURITY DEFINER functions do the insert + self-link atomically.
+-- ---------------------------------------------------------------------
+
+-- Create a brand new couple and attach the current user to it.
+-- Returns the new couple id. Fails if the user is already in a couple.
+create or replace function public.create_couple(
+  p_start_date  date,
+  p_main_bg_url text default null
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_uid       uuid := auth.uid();
+  v_couple_id uuid;
+begin
+  if v_uid is null then
+    raise exception 'not authenticated';
+  end if;
+
+  if (select couple_id from public.users where id = v_uid) is not null then
+    raise exception 'already in a couple';
+  end if;
+
+  insert into public.couples (start_date, main_bg_url)
+  values (p_start_date, p_main_bg_url)
+  returning id into v_couple_id;
+
+  -- Ensure the user row exists, then link it.
+  insert into public.users (id, couple_id)
+  values (v_uid, v_couple_id)
+  on conflict (id) do update set couple_id = excluded.couple_id;
+
+  return v_couple_id;
+end;
+$$;
+
+-- Join an existing couple by its id (used as the invite code).
+-- Returns the couple id. Fails if the couple does not exist or is full (2).
+create or replace function public.join_couple(p_couple_id uuid)
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_uid     uuid := auth.uid();
+  v_members int;
+begin
+  if v_uid is null then
+    raise exception 'not authenticated';
+  end if;
+
+  if not exists (select 1 from public.couples where id = p_couple_id) then
+    raise exception 'couple not found';
+  end if;
+
+  select count(*) into v_members
+  from public.users
+  where couple_id = p_couple_id and id <> v_uid;
+
+  if v_members >= 2 then
+    raise exception 'couple is full';
+  end if;
+
+  insert into public.users (id, couple_id)
+  values (v_uid, p_couple_id)
+  on conflict (id) do update set couple_id = excluded.couple_id;
+
+  return p_couple_id;
+end;
+$$;
+
 -- =====================================================================
 --  Done.
 -- =====================================================================
