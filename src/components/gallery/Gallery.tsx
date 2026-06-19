@@ -5,7 +5,7 @@ import exifr from "exifr";
 import { ImagePlus, Loader2 } from "lucide-react";
 import { useGalleryStore, type GalleryItem } from "@/store/useGalleryStore";
 import { uploadPhotoToR2 } from "@/lib/uploadPhoto";
-import { addPhoto } from "@/app/actions/photos";
+import { addPhoto, deletePhoto } from "@/app/actions/photos";
 import type { GalleryPhoto } from "@/lib/types";
 import { PhotoCarousel } from "./PhotoCarousel";
 
@@ -38,6 +38,7 @@ export function Gallery({ initialPhotos }: Props) {
   const addOptimistic = useGalleryStore((s) => s.addOptimistic);
   const reconcile = useGalleryStore((s) => s.reconcile);
   const remove = useGalleryStore((s) => s.remove);
+  const upsert = useGalleryStore((s) => s.upsert);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
@@ -150,6 +151,16 @@ export function Gallery({ initialPhotos }: Props) {
           photos={photos}
           startIndex={viewerIndex}
           onClose={() => setViewerIndex(null)}
+          onDelete={(photo) => {
+            remove(photo.id); // optimistic
+            startUpload(async () => {
+              const res = await deletePhoto(photo.id);
+              if (!res.ok) {
+                upsert(photo); // roll back
+                setError("삭제에 실패했어요.");
+              }
+            });
+          }}
         />
       )}
     </section>

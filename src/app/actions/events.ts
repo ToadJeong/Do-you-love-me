@@ -98,6 +98,48 @@ export async function addEvent(input: AddEventInput): Promise<AddEventResult> {
   return { ok: true, event: data };
 }
 
+/** Update an event's editable fields. RLS keeps this scoped to the couple. */
+export async function updateEvent(
+  id: string,
+  patch: { title?: string; content?: string; type?: CalendarEventType },
+): Promise<AddEventResult> {
+  const supabase = await createClient();
+  const fields: Record<string, string | null> = {};
+  if (patch.title !== undefined) fields.title = patch.title || null;
+  if (patch.content !== undefined) fields.content = patch.content || null;
+  if (patch.type !== undefined) fields.type = patch.type;
+
+  const { data, error } = await supabase
+    .from("calendar_events")
+    .update(fields)
+    .eq("id", id)
+    .select("*")
+    .single<CalendarEvent>();
+
+  if (error || !data) return { ok: false, error: "수정에 실패했어요." };
+  return { ok: true, event: data };
+}
+
+/** Toggle the done flag of a todo item. */
+export async function setEventDone(
+  id: string,
+  done: boolean,
+): Promise<{ ok: boolean }> {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("calendar_events")
+    .update({ done })
+    .eq("id", id);
+  return { ok: !error };
+}
+
+/** Delete an event. */
+export async function deleteEvent(id: string): Promise<{ ok: boolean }> {
+  const supabase = await createClient();
+  const { error } = await supabase.from("calendar_events").delete().eq("id", id);
+  return { ok: !error };
+}
+
 /**
  * Persists a new manual ordering for a set of events (drag & drop).
  * `orderedIds` is the events in their new top-to-bottom order; each row's

@@ -50,6 +50,7 @@ create table if not exists public.calendar_events (
   title      text,
   content    text,
   sort_index integer not null default 0,            -- manual ordering (drag & drop)
+  done       boolean not null default false,        -- completion state for 'todo' items
   created_at timestamptz not null default now()
 );
 
@@ -68,6 +69,8 @@ create table if not exists public.gallery_photos (
 -- ---------------------------------------------------------------------
 alter table public.calendar_events
   add column if not exists sort_index integer not null default 0;
+alter table public.calendar_events
+  add column if not exists done boolean not null default false;
 alter table public.gallery_photos
   add column if not exists taken_at timestamptz;
 

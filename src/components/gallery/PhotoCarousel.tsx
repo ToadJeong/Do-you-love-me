@@ -1,17 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, Trash2 } from "lucide-react";
 import type { GalleryItem } from "@/store/useGalleryStore";
 
 interface Props {
   photos: GalleryItem[];
   startIndex: number;
   onClose: () => void;
+  onDelete: (photo: GalleryItem) => void;
 }
 
 /** Fullscreen swipeable carousel for viewing high-res photos. */
-export function PhotoCarousel({ photos, startIndex, onClose }: Props) {
+export function PhotoCarousel({ photos, startIndex, onClose, onDelete }: Props) {
   const [index, setIndex] = useState(startIndex);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
@@ -35,14 +36,31 @@ export function PhotoCarousel({ photos, startIndex, onClose }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90">
-      <button
-        type="button"
-        aria-label="닫기"
-        onClick={onClose}
-        className="absolute right-4 top-4 z-10 rounded-full p-2 text-white/80 hover:bg-white/10"
-      >
-        <X size={24} />
-      </button>
+      <div className="absolute right-4 top-4 z-10 flex gap-2">
+        {!current.pending && (
+          <button
+            type="button"
+            aria-label="사진 삭제"
+            onClick={() => {
+              if (confirm("이 사진을 삭제할까요?")) {
+                onDelete(current);
+                onClose();
+              }
+            }}
+            className="rounded-full p-2 text-white/80 hover:bg-white/10"
+          >
+            <Trash2 size={22} />
+          </button>
+        )}
+        <button
+          type="button"
+          aria-label="닫기"
+          onClick={onClose}
+          className="rounded-full p-2 text-white/80 hover:bg-white/10"
+        >
+          <X size={24} />
+        </button>
+      </div>
 
       {photos.length > 1 && (
         <>

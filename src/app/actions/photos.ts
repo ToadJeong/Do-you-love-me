@@ -1,6 +1,8 @@
 "use server";
 
+import { DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { createClient } from "@/lib/supabase/server";
+import { getR2Client, getR2Config } from "@/lib/r2";
 import type { GalleryPhoto } from "@/lib/types";
 
 export type AddPhotoResult =
@@ -46,4 +48,40 @@ export async function addPhoto(
 
   if (error || !data) return { ok: false, error: "저장에 실패했어요." };
   return { ok: true, photo: data };
+}
+
+/**
+ * Deletes a gallery photo: removes the DB row (RLS-scoped to the couple) and
+ * best-effort deletes the underlying R2 object so storage doesn't leak.
+ */
+export async function deletePhoto(id: string): Promise<{ ok: boolean }> {
+  const supabase = await createClient();
+
+  // Fetch first so we know the R2 key (and RLS confirms ownership).
+  const { data: photo } = await supabase
+    .from("gallery_photos")
+    .select("r2_image_url")
+    .eq("id", id)
+    .maybeSingle<{ r2_image_url: string }>();
+
+  const { error } = await supabase.from("gallery_photos").delete().eq("id", id);
+  if (error) return { ok: false };
+
+  // Best-effort R2 cleanup — failure here must not fail the delete.
+  if (photo?.r2_image_url) {
+    try {
+      const base = process.env.NEXT_PUBLIC_R2_PUBLIC_URL?.replace(/\/$/, "");
+      if (base && photo.r2_image_url.startsWith(base)) {
+        const key = photo.r2_image_url.slice(base.length + 1);
+        const { bucket } = getR2Config();
+        await getR2Client().send(
+          new DeleteObjectCommand({ Bucket: bucket, Key: key }),
+        );
+      }
+    } catch {
+      // ignore — orphaned object can be reaped later
+    }
+  }
+
+  return { ok: true };
 }

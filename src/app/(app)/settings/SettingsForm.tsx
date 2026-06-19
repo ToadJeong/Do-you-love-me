@@ -2,7 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Upload } from "lucide-react";
+import { Loader2, Upload, Copy, Check } from "lucide-react";
 import { uploadPhotoToR2 } from "@/lib/uploadPhoto";
 import { updateProfile, updateCoupleBackground } from "@/app/actions/settings";
 import type { AppUser, Couple } from "@/lib/types";
@@ -18,7 +18,23 @@ export function SettingsForm({ profile, couple }: Props) {
   const [avatar, setAvatar] = useState(profile.profile_image_url);
   const [bg, setBg] = useState(couple.main_bg_url);
   const [msg, setMsg] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const [pending, start] = useTransition();
+
+  async function shareCode() {
+    const text = `우리 커플로 연결해요 💕\n초대 코드: ${couple.id}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: "Do you love me", text });
+      } else {
+        await navigator.clipboard.writeText(couple.id);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1500);
+      }
+    } catch {
+      // user cancelled share — ignore
+    }
+  }
 
   const avatarInput = useRef<HTMLInputElement>(null);
   const bgInput = useRef<HTMLInputElement>(null);
@@ -151,7 +167,17 @@ export function SettingsForm({ profile, couple }: Props) {
 
       {/* invite code */}
       <section className="rounded-2xl bg-neutral-50 p-4 text-sm">
-        <p className="font-medium text-neutral-700">파트너 초대 코드</p>
+        <div className="flex items-center justify-between gap-2">
+          <p className="font-medium text-neutral-700">파트너 초대 코드</p>
+          <button
+            type="button"
+            onClick={shareCode}
+            className="inline-flex items-center gap-1.5 rounded-full bg-love px-3 py-1.5 text-xs font-medium text-white transition hover:bg-love-dark"
+          >
+            {copied ? <Check size={14} /> : <Copy size={14} />}
+            {copied ? "복사됨" : "공유"}
+          </button>
+        </div>
         <p className="mt-1 break-all font-mono text-xs text-neutral-500">
           {couple.id}
         </p>

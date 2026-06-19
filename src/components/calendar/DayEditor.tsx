@@ -3,7 +3,7 @@
 import { useMemo, useState, useTransition } from "react";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
-import { X, GripVertical } from "lucide-react";
+import { X, GripVertical, Trash2, Pencil, Check } from "lucide-react";
 import {
   DndContext,
   PointerSensor,
@@ -21,7 +21,13 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { useCalendarStore } from "@/store/useCalendarStore";
 import { EVENT_STYLES, EVENT_TYPE_ORDER } from "@/lib/eventStyle";
-import { addEvent, reorderEvents } from "@/app/actions/events";
+import {
+  addEvent,
+  updateEvent,
+  deleteEvent,
+  setEventDone,
+  reorderEvents,
+} from "@/app/actions/events";
 import type { CalendarEvent, CalendarEventType } from "@/lib/types";
 
 interface Props {
@@ -35,20 +41,27 @@ interface Props {
 function EventRow({
   ev,
   enableDnd,
+  onToggleDone,
+  onEdit,
+  onDelete,
 }: {
   ev: CalendarEvent;
   enableDnd: boolean;
+  onToggleDone: (ev: CalendarEvent) => void;
+  onEdit: (ev: CalendarEvent) => void;
+  onDelete: (ev: CalendarEvent) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: ev.id, disabled: !enableDnd });
   const style = EVENT_STYLES[ev.type];
   const pending = ev.id.startsWith("temp-");
+  const isTodo = ev.type === "todo";
 
   return (
     <li
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
-      className={`flex items-start gap-2 rounded-xl border border-neutral-200 bg-white p-3 ${
+      className={`group flex items-start gap-2 rounded-xl border border-neutral-200 bg-white p-3 ${
         pending ? "opacity-60" : ""
       } ${isDragging ? "shadow-lg" : ""}`}
     >
@@ -63,6 +76,22 @@ function EventRow({
           <GripVertical size={16} />
         </button>
       )}
+
+      {isTodo && (
+        <button
+          type="button"
+          aria-label={ev.done ? "완료 취소" : "완료"}
+          onClick={() => onToggleDone(ev)}
+          className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border ${
+            ev.done
+              ? "border-love bg-love text-white"
+              : "border-neutral-300 text-transparent"
+          }`}
+        >
+          <Check size={13} />
+        </button>
+      )}
+
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <span
@@ -70,7 +99,13 @@ function EventRow({
           >
             {style.label}
           </span>
-          <span className="text-sm font-medium">{ev.title}</span>
+          <span
+            className={`text-sm font-medium ${
+              ev.done ? "text-neutral-400 line-through" : ""
+            }`}
+          >
+            {ev.title}
+          </span>
         </div>
         {ev.content && (
           <p className="mt-1 whitespace-pre-wrap text-sm text-neutral-600">
@@ -78,15 +113,34 @@ function EventRow({
           </p>
         )}
       </div>
+
+      {!pending && (
+        <div className="flex shrink-0 gap-1 text-neutral-300">
+          <button
+            type="button"
+            aria-label="수정"
+            onClick={() => onEdit(ev)}
+            className="rounded p-1 hover:text-neutral-600"
+          >
+            <Pencil size={15} />
+          </button>
+          <button
+            type="button"
+            aria-label="삭제"
+            onClick={() => onDelete(ev)}
+            className="rounded p-1 hover:text-red-500"
+          >
+            <Trash2 size={15} />
+          </button>
+        </div>
+      )}
     </li>
   );
 }
 
 /**
- * Day detail: lists a day's events (ordered by sort_index) and adds new ones
- * with an optimistic update. On desktop (enableDnd) the list is drag-sortable;
- * the new order is persisted via reorderEvents.
- *
+ * Day detail: lists a day's events (ordered by sort_index) and supports add,
+ * edit, delete, todo completion, and PC drag-to-reorder — all optimistic.
  * Shared by the mobile bottom sheet and the desktop split-view side panel.
  */
 export function DayEditor({ date, onClose, enableDnd = false }: Props) {
@@ -95,6 +149,7 @@ export function DayEditor({ date, onClose, enableDnd = false }: Props) {
   const addOptimistic = useCalendarStore((s) => s.addOptimistic);
   const reconcile = useCalendarStore((s) => s.reconcile);
   const remove = useCalendarStore((s) => s.remove);
+  const upsert = useCalendarStore((s) => s.upsert);
   const reorder = useCalendarStore((s) => s.reorder);
 
   const events = useMemo(
@@ -112,12 +167,109 @@ export function DayEditor({ date, onClose, enableDnd = false }: Props) {
   const [type, setType] = useState<CalendarEventType>("schedule");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [, startTransition] = useTransition();
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
   );
+
+  function resetForm() {
+    setEditingId(null);
+    setType("schedule");
+    setTitle("");
+    setContent("");
+  }
+
+  function startEdit(ev: CalendarEvent) {
+    setEditingId(ev.id);
+    setType(ev.type);
+    setTitle(ev.title ?? "");
+    setContent(ev.content ?? "");
+    setError(null);
+  }
+
+  function handleDelete(ev: CalendarEvent) {
+    remove(ev.id); // optimistic
+    if (editingId === ev.id) resetForm();
+    startTransition(async () => {
+      const res = await deleteEvent(ev.id);
+      if (!res.ok) {
+        upsert(ev); // roll back
+        setError("삭제에 실패했어요.");
+      }
+    });
+  }
+
+  function handleToggleDone(ev: CalendarEvent) {
+    const next = { ...ev, done: !ev.done };
+    upsert(next); // optimistic
+    startTransition(async () => {
+      const res = await setEventDone(ev.id, next.done);
+      if (!res.ok) {
+        upsert(ev); // roll back
+        setError("저장에 실패했어요.");
+      }
+    });
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!title.trim()) {
+      setError("제목을 입력해 주세요.");
+      return;
+    }
+    setError(null);
+    const payload = { title: title.trim(), content: content.trim(), type };
+
+    if (editingId) {
+      const prev = events.find((ev) => ev.id === editingId);
+      if (prev) {
+        upsert({ ...prev, ...payload, content: payload.content || null }); // optimistic
+      }
+      const id = editingId;
+      resetForm();
+      startTransition(async () => {
+        const res = await updateEvent(id, payload);
+        if (res.ok) upsert(res.event);
+        else {
+          if (prev) upsert(prev);
+          setError(res.error);
+        }
+      });
+      return;
+    }
+
+    const tempId = `temp-${crypto.randomUUID()}`;
+    const optimistic: CalendarEvent = {
+      id: tempId,
+      couple_id: "",
+      event_date: dateISO,
+      type,
+      title: payload.title,
+      content: payload.content || null,
+      sort_index: events.length,
+      done: false,
+      created_at: new Date().toISOString(),
+    };
+    addOptimistic(optimistic);
+    resetForm();
+
+    startTransition(async () => {
+      const res = await addEvent({
+        event_date: dateISO,
+        type: payload.type,
+        title: payload.title,
+        content: payload.content,
+      });
+      if (res.ok) reconcile(tempId, res.event);
+      else {
+        remove(tempId);
+        setError(res.error);
+      }
+    });
+  }
 
   function handleDragEnd(e: DragEndEvent) {
     const { active, over } = e;
@@ -130,48 +282,6 @@ export function DayEditor({ date, onClose, enableDnd = false }: Props) {
     reorder(newIds); // optimistic
     startTransition(async () => {
       await reorderEvents(newIds);
-    });
-  }
-
-  function handleAdd(e: React.FormEvent) {
-    e.preventDefault();
-    if (!title.trim()) {
-      setError("제목을 입력해 주세요.");
-      return;
-    }
-    setError(null);
-
-    const tempId = `temp-${crypto.randomUUID()}`;
-    const optimistic: CalendarEvent = {
-      id: tempId,
-      couple_id: "",
-      event_date: dateISO,
-      type,
-      title: title.trim(),
-      content: content.trim() || null,
-      sort_index: events.length,
-      created_at: new Date().toISOString(),
-    };
-
-    // Show it immediately, then reset the form.
-    addOptimistic(optimistic);
-    const payload = { title: title.trim(), content: content.trim(), type };
-    setTitle("");
-    setContent("");
-
-    startTransition(async () => {
-      const res = await addEvent({
-        event_date: dateISO,
-        type: payload.type,
-        title: payload.title,
-        content: payload.content,
-      });
-      if (res.ok) {
-        reconcile(tempId, res.event);
-      } else {
-        remove(tempId);
-        setError(res.error);
-      }
     });
   }
 
@@ -200,7 +310,14 @@ export function DayEditor({ date, onClose, enableDnd = false }: Props) {
           >
             <ul className="mb-5 flex flex-col gap-2">
               {events.map((ev) => (
-                <EventRow key={ev.id} ev={ev} enableDnd={enableDnd} />
+                <EventRow
+                  key={ev.id}
+                  ev={ev}
+                  enableDnd={enableDnd}
+                  onToggleDone={handleToggleDone}
+                  onEdit={startEdit}
+                  onDelete={handleDelete}
+                />
               ))}
             </ul>
           </SortableContext>
@@ -209,7 +326,7 @@ export function DayEditor({ date, onClose, enableDnd = false }: Props) {
         <p className="mb-5 text-sm text-neutral-400">아직 기록이 없어요.</p>
       )}
 
-      <form onSubmit={handleAdd} className="flex flex-col gap-3">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
         <div className="flex flex-wrap gap-2">
           {EVENT_TYPE_ORDER.map((t) => (
             <button
@@ -243,12 +360,23 @@ export function DayEditor({ date, onClose, enableDnd = false }: Props) {
 
         {error && <p className="text-sm text-red-600">{error}</p>}
 
-        <button
-          type="submit"
-          className="rounded-xl bg-love py-3 text-base font-medium text-white transition hover:bg-love-dark active:scale-[0.99]"
-        >
-          저장
-        </button>
+        <div className="flex gap-2">
+          {editingId && (
+            <button
+              type="button"
+              onClick={resetForm}
+              className="rounded-xl border border-neutral-300 px-4 py-3 text-base font-medium text-neutral-600"
+            >
+              취소
+            </button>
+          )}
+          <button
+            type="submit"
+            className="flex-1 rounded-xl bg-love py-3 text-base font-medium text-white transition hover:bg-love-dark active:scale-[0.99]"
+          >
+            {editingId ? "수정" : "저장"}
+          </button>
+        </div>
       </form>
     </>
   );

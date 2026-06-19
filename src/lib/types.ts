@@ -28,6 +28,7 @@ export interface CalendarEvent {
   title: string | null;
   content: string | null;
   sort_index: number;
+  done: boolean;
   created_at: string;
 }
 

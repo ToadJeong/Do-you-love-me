@@ -53,9 +53,16 @@ export const useCalendarStore = create<CalendarState>((set) => ({
     set((s) => ({ events: [...s.events, event] })),
 
   reconcile: (tempId, real) =>
-    set((s) => ({
-      events: s.events.map((e) => (e.id === tempId ? real : e)),
-    })),
+    set((s) => {
+      // If a realtime echo already inserted the real row, just drop the temp
+      // instead of creating a duplicate; otherwise swap temp -> real.
+      const realExists = s.events.some((e) => e.id === real.id);
+      return {
+        events: realExists
+          ? s.events.filter((e) => e.id !== tempId)
+          : s.events.map((e) => (e.id === tempId ? real : e)),
+      };
+    }),
 
   remove: (id) =>
     set((s) => ({ events: s.events.filter((e) => e.id !== id) })),

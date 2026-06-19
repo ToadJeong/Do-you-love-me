@@ -32,11 +32,15 @@ export const useGalleryStore = create<GalleryState>((set) => ({
   addOptimistic: (item) => set((s) => ({ photos: [item, ...s.photos] })),
 
   reconcile: (tempId, real) =>
-    set((s) => ({
-      photos: s.photos.map((p) =>
-        p.id === tempId ? { ...real } : p,
-      ),
-    })),
+    set((s) => {
+      // Dedupe against a realtime echo that may have already inserted the row.
+      const realExists = s.photos.some((p) => p.id === real.id);
+      return {
+        photos: realExists
+          ? s.photos.filter((p) => p.id !== tempId)
+          : s.photos.map((p) => (p.id === tempId ? { ...real } : p)),
+      };
+    }),
 
   remove: (id) =>
     set((s) => ({ photos: s.photos.filter((p) => p.id !== id) })),
