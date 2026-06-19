@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState, useTransition } from "react";
 import {
   addMonths,
   eachDayOfInterval,
@@ -14,9 +14,10 @@ import {
   startOfWeek,
   subMonths,
 } from "date-fns";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { useCalendarStore } from "@/store/useCalendarStore";
 import { EVENT_STYLES } from "@/lib/eventStyle";
+import { fetchMonthEvents } from "@/app/actions/events";
 import type { CalendarEvent, CalendarEventType } from "@/lib/types";
 import { EventBottomSheet } from "./EventBottomSheet";
 
@@ -27,13 +28,33 @@ interface Props {
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 
 export function MonthCalendar({ initialEvents }: Props) {
-  // Seed the store once with the server-fetched events.
+  // Seed the store once with the server-fetched (current month) events.
   const setEvents = useCalendarStore((s) => s.setEvents);
+  const mergeRange = useCalendarStore((s) => s.mergeRange);
   useState(() => setEvents(initialEvents));
 
   const events = useCalendarStore((s) => s.events);
   const [cursor, setCursor] = useState(() => new Date());
   const [selected, setSelected] = useState<Date | null>(null);
+  const [loading, startLoad] = useTransition();
+
+  // Track which months have been fetched so we only hit the server once each.
+  const loadedMonths = useRef<Set<string>>(
+    new Set([format(new Date(), "yyyy-MM")]),
+  );
+
+  function goToMonth(next: Date) {
+    setCursor(next);
+    const key = format(next, "yyyy-MM");
+    if (loadedMonths.current.has(key)) return;
+    loadedMonths.current.add(key);
+    startLoad(async () => {
+      const fetched = await fetchMonthEvents(format(next, "yyyy-MM-dd"));
+      const from = format(startOfWeek(startOfMonth(next)), "yyyy-MM-dd");
+      const to = format(endOfWeek(endOfMonth(next)), "yyyy-MM-dd");
+      mergeRange(from, to, fetched);
+    });
+  }
 
   const days = useMemo(() => {
     const start = startOfWeek(startOfMonth(cursor));
@@ -58,18 +79,21 @@ export function MonthCalendar({ initialEvents }: Props) {
         <button
           type="button"
           aria-label="이전 달"
-          onClick={() => setCursor((c) => subMonths(c, 1))}
+          onClick={() => goToMonth(subMonths(cursor, 1))}
           className="rounded-full p-1.5 hover:bg-neutral-100"
         >
           <ChevronLeft size={20} />
         </button>
-        <h2 className="text-base font-semibold">
+        <h2 className="flex items-center gap-2 text-base font-semibold">
           {format(cursor, "yyyy년 M월")}
+          {loading && (
+            <Loader2 size={15} className="animate-spin text-neutral-400" />
+          )}
         </h2>
         <button
           type="button"
           aria-label="다음 달"
-          onClick={() => setCursor((c) => addMonths(c, 1))}
+          onClick={() => goToMonth(addMonths(cursor, 1))}
           className="rounded-full p-1.5 hover:bg-neutral-100"
         >
           <ChevronRight size={20} />

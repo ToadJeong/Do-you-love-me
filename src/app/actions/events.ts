@@ -1,7 +1,37 @@
 "use server";
 
+import {
+  endOfMonth,
+  endOfWeek,
+  format,
+  startOfMonth,
+  startOfWeek,
+} from "date-fns";
 import { createClient } from "@/lib/supabase/server";
 import type { CalendarEvent, CalendarEventType } from "@/lib/types";
+
+/**
+ * Fetches the events covering a month's visible grid (the weeks shown for that
+ * month). `monthISO` is any date within the desired month. RLS scopes the rows
+ * to the caller's couple, so no couple_id is needed here.
+ */
+export async function fetchMonthEvents(
+  monthISO: string,
+): Promise<CalendarEvent[]> {
+  const month = new Date(monthISO);
+  const from = format(startOfWeek(startOfMonth(month)), "yyyy-MM-dd");
+  const to = format(endOfWeek(endOfMonth(month)), "yyyy-MM-dd");
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("calendar_events")
+    .select("*")
+    .gte("event_date", from)
+    .lte("event_date", to)
+    .order("event_date", { ascending: true });
+
+  return (data as CalendarEvent[] | null) ?? [];
+}
 
 export interface AddEventInput {
   event_date: string; // ISO date (YYYY-MM-DD)
