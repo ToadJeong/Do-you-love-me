@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Place at: android/app/src/main/res/layout/dday_widget.xml -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="12dp"
+    android:background="@drawable/dday_widget_bg">
+
+    <TextView
+        android:id="@+id/widget_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="우리가 만난 지"
+        android:textColor="#FFFFFFFF"
+        android:textSize="12sp"
+        android:alpha="0.85" />
+
+    <TextView
+        android:id="@+id/widget_dday"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:text="D+1"
+        android:textColor="#FFFFFFFF"
+        android:textStyle="bold"
+        android:textSize="32sp" />
+</LinearLayout>

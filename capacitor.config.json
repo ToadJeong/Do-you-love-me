@@ -1,0 +1,10 @@
+{
+  "appId": "me.doyoulove.app",
+  "appName": "Do you love me",
+  "webDir": "public",
+  "server": {
+    "url": "https://your-app.vercel.app",
+    "androidScheme": "https",
+    "cleartext": false
+  }
+}

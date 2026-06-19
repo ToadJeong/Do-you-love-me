@@ -1,9 +1,11 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { Heart } from "lucide-react";
 import { getDayCount, getUpcomingAnniversaries } from "@/lib/dday";
+import { syncDdayToWidget } from "@/lib/widgetSync";
 import type { AppUser } from "@/lib/types";
 
 interface HeroProps {
@@ -43,6 +45,12 @@ export function Hero({ startDate, bgUrl, members, myId }: HeroProps) {
 
   const me = members.find((m) => m.id === myId);
   const partner = members.find((m) => m.id !== myId);
+
+  // Mirror the D-Day into native storage for the Android home-screen widget
+  // (no-op on plain web).
+  useEffect(() => {
+    syncDdayToWidget(startDate, dayCount);
+  }, [startDate, dayCount]);
 
   return (
     <div className="relative mx-auto min-h-dvh w-full max-w-md overflow-hidden">

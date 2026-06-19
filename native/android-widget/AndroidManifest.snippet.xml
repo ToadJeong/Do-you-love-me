@@ -1,0 +1,15 @@
+<!--
+  Merge this <receiver> into android/app/src/main/AndroidManifest.xml,
+  inside the <application> element.
+-->
+<receiver
+    android:name="me.doyoulove.app.widget.DdayWidgetProvider"
+    android:exported="false">
+    <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+        <action android:name="me.doyoulove.app.widget.MIDNIGHT_UPDATE" />
+    </intent-filter>
+    <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/dday_widget_info" />
+</receiver>
