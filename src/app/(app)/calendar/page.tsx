@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import {
   endOfMonth,
   endOfWeek,
@@ -7,7 +6,6 @@ import {
   startOfMonth,
   startOfWeek,
 } from "date-fns";
-import { ChevronLeft } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { getEventsInRange } from "@/lib/couples";
 import { MonthCalendar } from "@/components/calendar/MonthCalendar";
@@ -24,13 +22,8 @@ export default async function CalendarPage() {
   const events = await getEventsInRange(from, to);
 
   return (
-    <main className="mx-auto w-full max-w-md px-4 py-8 md:max-w-2xl">
-      <Link
-        href="/"
-        className="mb-6 inline-flex items-center gap-1 text-sm text-neutral-500"
-      >
-        <ChevronLeft size={16} /> 홈으로
-      </Link>
+    <main className="mx-auto w-full max-w-md px-4 py-8 md:max-w-5xl md:px-8">
+      <h1 className="mb-6 text-xl font-semibold tracking-tight">캘린더</h1>
       <MonthCalendar initialEvents={events} />
     </main>
   );

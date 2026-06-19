@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { format } from "date-fns";
-import { Heart, CalendarDays, Images, Settings } from "lucide-react";
+import { Heart } from "lucide-react";
 import { getDayCount, getUpcomingAnniversaries } from "@/lib/dday";
 import type { AppUser } from "@/lib/types";
 
@@ -45,7 +45,7 @@ export function Hero({ startDate, bgUrl, members, myId }: HeroProps) {
   const partner = members.find((m) => m.id !== myId);
 
   return (
-    <main className="relative mx-auto min-h-dvh w-full max-w-md overflow-hidden">
+    <div className="relative mx-auto min-h-dvh w-full max-w-md overflow-hidden">
       {/* background */}
       <div className="absolute inset-0">
         {bgUrl ? (
@@ -59,7 +59,7 @@ export function Hero({ startDate, bgUrl, members, myId }: HeroProps) {
       </div>
 
       {/* content */}
-      <div className="relative flex min-h-dvh flex-col px-6 pb-10 pt-12 text-white">
+      <div className="relative flex min-h-dvh flex-col px-6 pb-12 pt-12 text-white">
         {/* profile heart header */}
         <header className="flex items-center justify-center gap-5">
           <Avatar user={me} fallback="나" />
@@ -76,75 +76,50 @@ export function Hero({ startDate, bgUrl, members, myId }: HeroProps) {
           )}
         </header>
 
-        {/* D-day */}
-        <div className="mt-16 text-center">
-          <p className="text-sm tracking-wide text-white/80">우리가 만난 지</p>
-          <p
-            suppressHydrationWarning
-            className="mt-2 font-serif text-7xl font-semibold tracking-tight tabular-nums drop-shadow-lg"
-          >
-            D+{dayCount}
-          </p>
-          <p className="mt-2 text-xs text-white/70">
-            since {format(new Date(startDate), "yyyy.MM.dd")}
-          </p>
-        </div>
-
-        {/* anniversaries glass card */}
-        {anniversaries.length > 0 && (
-          <div
-            suppressHydrationWarning
-            className="mt-10 rounded-3xl border border-white/25 bg-white/15 p-4 backdrop-blur-md"
-          >
-            <p className="mb-2 px-1 text-xs font-medium uppercase tracking-widest text-white/75">
-              다가오는 기념일
+        <div className="flex flex-1 flex-col justify-center">
+          {/* D-day */}
+          <div className="text-center">
+            <p className="text-sm tracking-wide text-white/80">우리가 만난 지</p>
+            <p
+              suppressHydrationWarning
+              className="mt-2 font-serif text-7xl font-semibold tracking-tight tabular-nums drop-shadow-lg"
+            >
+              D+{dayCount}
             </p>
-            <ul className="divide-y divide-white/15">
-              {anniversaries.map((a) => (
-                <li
-                  key={a.label}
-                  className="flex items-center justify-between px-1 py-2.5 text-sm"
-                >
-                  <span className="font-medium">{a.label}</span>
-                  <span className="flex items-center gap-2 text-white/80">
-                    <span>{format(a.date, "yyyy.MM.dd")}</span>
-                    <span className="rounded-full bg-white/90 px-2 py-0.5 text-xs font-medium text-[#C8546B] tabular-nums">
-                      {a.daysUntil === 0 ? "오늘" : `D-${a.daysUntil}`}
-                    </span>
-                  </span>
-                </li>
-              ))}
-            </ul>
+            <p className="mt-2 text-xs text-white/70">
+              since {format(new Date(startDate), "yyyy.MM.dd")}
+            </p>
           </div>
-        )}
 
-        {/* quick actions */}
-        <nav className="mt-auto grid grid-cols-3 gap-3 pt-10">
-          <QuickLink href="/calendar" icon={<CalendarDays size={20} />} label="캘린더" />
-          <QuickLink href="/gallery" icon={<Images size={20} />} label="갤러리" />
-          <QuickLink href="/settings" icon={<Settings size={20} />} label="설정" />
-        </nav>
+          {/* anniversaries glass card */}
+          {anniversaries.length > 0 && (
+            <div
+              suppressHydrationWarning
+              className="mt-10 rounded-3xl border border-white/25 bg-white/15 p-4 backdrop-blur-md"
+            >
+              <p className="mb-2 px-1 text-xs font-medium uppercase tracking-widest text-white/75">
+                다가오는 기념일
+              </p>
+              <ul className="divide-y divide-white/15">
+                {anniversaries.map((a) => (
+                  <li
+                    key={a.label}
+                    className="flex items-center justify-between px-1 py-2.5 text-sm"
+                  >
+                    <span className="font-medium">{a.label}</span>
+                    <span className="flex items-center gap-2 text-white/80">
+                      <span>{format(a.date, "yyyy.MM.dd")}</span>
+                      <span className="rounded-full bg-white/90 px-2 py-0.5 text-xs font-medium text-[#C8546B] tabular-nums">
+                        {a.daysUntil === 0 ? "오늘" : `D-${a.daysUntil}`}
+                      </span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
       </div>
-    </main>
-  );
-}
-
-function QuickLink({
-  href,
-  icon,
-  label,
-}: {
-  href: string;
-  icon: React.ReactNode;
-  label: string;
-}) {
-  return (
-    <Link
-      href={href}
-      className="flex flex-col items-center gap-1.5 rounded-2xl border border-white/25 bg-white/15 py-3 text-xs font-medium backdrop-blur-md transition active:scale-[0.97]"
-    >
-      {icon}
-      {label}
-    </Link>
+    </div>
   );
 }

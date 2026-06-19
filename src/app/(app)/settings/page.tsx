@@ -1,9 +1,7 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { getCouple } from "@/lib/couples";
-import { signout } from "../(auth)/actions";
+import { signout } from "../../(auth)/actions";
 import { SettingsForm } from "./SettingsForm";
 
 export default async function SettingsPage() {
@@ -19,12 +17,6 @@ export default async function SettingsPage() {
 
   return (
     <main className="mx-auto w-full max-w-md px-6 py-8">
-      <Link
-        href="/"
-        className="mb-6 inline-flex items-center gap-1 text-sm text-neutral-500"
-      >
-        <ChevronLeft size={16} /> 홈으로
-      </Link>
       <h1 className="mb-6 text-2xl font-semibold tracking-tight">설정</h1>
 
       <SettingsForm profile={profile} couple={couple} />
