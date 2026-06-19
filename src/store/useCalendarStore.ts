@@ -23,6 +23,8 @@ interface CalendarState {
   reconcile: (tempId: string, real: CalendarEvent) => void;
   /** Remove an event (used to roll back a failed optimistic add). */
   remove: (id: string) => void;
+  /** Apply a new manual order: assign sort_index by position for these ids. */
+  reorder: (orderedIds: string[]) => void;
 }
 
 export const useCalendarStore = create<CalendarState>((set) => ({
@@ -55,4 +57,14 @@ export const useCalendarStore = create<CalendarState>((set) => ({
 
   remove: (id) =>
     set((s) => ({ events: s.events.filter((e) => e.id !== id) })),
+
+  reorder: (orderedIds) =>
+    set((s) => {
+      const position = new Map(orderedIds.map((id, i) => [id, i]));
+      return {
+        events: s.events.map((e) =>
+          position.has(e.id) ? { ...e, sort_index: position.get(e.id)! } : e,
+        ),
+      };
+    }),
 }));

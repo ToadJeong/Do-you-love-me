@@ -1,12 +1,24 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
+import exifr from "exifr";
 import { ImagePlus, Loader2 } from "lucide-react";
 import { useGalleryStore, type GalleryItem } from "@/store/useGalleryStore";
 import { uploadPhotoToR2 } from "@/lib/uploadPhoto";
 import { addPhoto } from "@/app/actions/photos";
 import type { GalleryPhoto } from "@/lib/types";
 import { PhotoCarousel } from "./PhotoCarousel";
+
+/** Read the EXIF capture date (DateTimeOriginal) from an image, if present. */
+async function readTakenAt(file: File): Promise<string | null> {
+  try {
+    const data = await exifr.parse(file, ["DateTimeOriginal", "CreateDate"]);
+    const d: Date | undefined = data?.DateTimeOriginal ?? data?.CreateDate;
+    return d ? new Date(d).toISOString() : null;
+  } catch {
+    return null;
+  }
+}
 
 interface Props {
   initialPhotos: GalleryPhoto[];
@@ -45,6 +57,7 @@ export function Gallery({ initialPhotos }: Props) {
         id: tempId,
         couple_id: "",
         r2_image_url: localPreview,
+        taken_at: null,
         uploaded_at: new Date().toISOString(),
         pending: true,
         localPreview,
@@ -53,8 +66,11 @@ export function Gallery({ initialPhotos }: Props) {
 
       startUpload(async () => {
         try {
+          // Read EXIF capture date so PC bulk uploads sort by when they were
+          // actually taken, then upload directly to R2.
+          const takenAt = await readTakenAt(file);
           const publicUrl = await uploadPhotoToR2(file);
-          const res = await addPhoto(publicUrl);
+          const res = await addPhoto(publicUrl, takenAt);
           if (res.ok) {
             reconcile(tempId, res.photo);
           } else {

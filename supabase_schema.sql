@@ -49,6 +49,7 @@ create table if not exists public.calendar_events (
                check (type in ('schedule', 'diary', 'todo', 'anniversary')),
   title      text,
   content    text,
+  sort_index integer not null default 0,            -- manual ordering (drag & drop)
   created_at timestamptz not null default now()
 );
 
@@ -58,8 +59,17 @@ create table if not exists public.gallery_photos (
   couple_id    uuid not null
                  references public.couples (id) on delete cascade,
   r2_image_url text not null,
+  taken_at     timestamptz,                          -- EXIF capture time (if any)
   uploaded_at  timestamptz not null default now()
 );
+
+-- ---------------------------------------------------------------------
+-- 1b. Idempotent upgrades (safe to re-run on an existing database)
+-- ---------------------------------------------------------------------
+alter table public.calendar_events
+  add column if not exists sort_index integer not null default 0;
+alter table public.gallery_photos
+  add column if not exists taken_at timestamptz;
 
 -- Helpful indexes for the most common lookups (by couple / by date)
 create index if not exists calendar_events_couple_date_idx

@@ -27,6 +27,7 @@ export interface CalendarEvent {
   type: CalendarEventType;
   title: string | null;
   content: string | null;
+  sort_index: number;
   created_at: string;
 }
 
@@ -34,5 +35,6 @@ export interface GalleryPhoto {
   id: string;
   couple_id: string;
   r2_image_url: string;
+  taken_at: string | null;
   uploaded_at: string;
 }

@@ -1,36 +1,132 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Do you love me 💕
 
-## Getting Started
+커플을 위한 **D-Day · 공유 캘린더 · 고화질 갤러리** 웹앱 (PWA).
+PC 웹과 모바일을 하나의 코드베이스로 지원하며, 안드로이드는 추후 웹뷰로 감싸 출시할 수 있습니다.
 
-First, run the development server:
+## 기술 스택
+
+- **Next.js 16** (App Router) · TypeScript · Tailwind CSS v4
+- **Supabase** — 인증(Auth) + PostgreSQL(데이터) + RLS(행 수준 보안)
+- **Cloudflare R2** — 사진/영상 등 대용량 미디어 저장 (S3 호환, Pre-signed URL 직접 업로드)
+- zustand(상태) · date-fns(날짜) · lucide-react(아이콘) · @dnd-kit(드래그) · exifr(EXIF)
+
+---
+
+## 1. 사전 준비
+
+### Supabase
+1. [supabase.com](https://supabase.com) 에서 프로젝트 생성
+2. **SQL Editor** 에 `supabase_schema.sql` 전체를 붙여넣고 실행
+   - 4개 테이블(`couples`, `users`, `calendar_events`, `gallery_photos`) + RLS + 커플 연결 RPC가 생성됩니다.
+   - 이미 한 번 실행했더라도, 파일 안의 `alter table ... add column if not exists` 덕분에 재실행해도 안전합니다(누락 컬럼 자동 추가).
+3. **Authentication → Providers → Email** 활성화.
+   - 테스트를 빠르게 하려면 **"Confirm email" 을 끄면** 가입 즉시 로그인됩니다.
+4. **Project Settings → API** 에서 `Project URL` 과 `anon public` 키를 복사.
+
+### Cloudflare R2
+1. R2 버킷 생성 (예: `dylm-media`)
+2. **R2 → Manage API Tokens** 에서 Access Key ID / Secret Access Key 발급
+3. 버킷 **Public access** 또는 커스텀 도메인/CDN을 연결하고 그 공개 URL을 확보
+   (사진을 다시 읽을 때 사용 — `NEXT_PUBLIC_R2_PUBLIC_URL`)
+4. **CORS 설정** (업로드/조회 시 필수). 버킷 Settings → CORS Policy:
+   ```json
+   [
+     {
+       "AllowedOrigins": ["http://localhost:3000", "https://<your-app>.vercel.app"],
+       "AllowedMethods": ["GET", "PUT"],
+       "AllowedHeaders": ["*"],
+       "MaxAgeSeconds": 3600
+     }
+   ]
+   ```
+   > 배포 도메인이 확정되면 `AllowedOrigins` 에 실제 주소를 꼭 추가하세요. 안 하면 사진이 깨져 보입니다.
+
+---
+
+## 2. 환경 변수
+
+루트에 `.env.local` 을 만들고 (`cp .env.local.example .env.local`) 아래를 채웁니다.
+
+| 변수 | 위치 | 설명 |
+| --- | --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | 클라이언트 | Supabase Project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | 클라이언트 | Supabase anon public 키 (노출되어도 RLS가 보호) |
+| `SUPABASE_SERVICE_ROLE_KEY` | **서버 전용** | (선택) 관리 작업용. 절대 클라이언트 노출 금지 |
+| `R2_ACCESS_KEY_ID` | **서버 전용** | R2 Access Key |
+| `R2_SECRET_ACCESS_KEY` | **서버 전용** | R2 Secret Key |
+| `R2_ENDPOINT` | **서버 전용** | `https://<accountid>.r2.cloudflarestorage.com` |
+| `R2_BUCKET_NAME` | **서버 전용** | 버킷 이름 |
+| `NEXT_PUBLIC_R2_PUBLIC_URL` | 클라이언트 | 업로드된 객체를 읽는 공개 베이스 URL |
+
+> `NEXT_PUBLIC_` 접두사가 붙은 값만 브라우저로 전달됩니다. R2 시크릿/Service Role 키에는 절대 붙이지 마세요.
+
+---
+
+## 3. 로컬 개발
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev      # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+빌드/검사:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run build    # 프로덕션 빌드 (타입체크 포함)
+npm run lint     # ESLint
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 4. Vercel 배포
 
-To learn more about Next.js, take a look at the following resources:
+1. 이 저장소를 GitHub에 푸시 (이미 되어 있음)
+2. [vercel.com](https://vercel.com) → **Add New → Project** → 저장소 선택
+3. **Environment Variables** 에 위 표의 변수를 모두 입력
+   (Supabase URL/anon, R2 4종, `NEXT_PUBLIC_R2_PUBLIC_URL`)
+4. **Deploy**. 이후 `git push` 할 때마다 자동 재배포됩니다.
+5. 배포 도메인이 나오면 **R2 CORS의 `AllowedOrigins`** 에 그 주소를 추가하세요.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+> 로컬에선 되는데 배포본에서 에러가 나면 99% 환경 변수 누락입니다. Vercel → Settings → Environment Variables 를 먼저 확인하세요.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 5. 폰에 설치하기 (PWA 테스트)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+별도 앱스토어 등록 없이, 배포된 주소로 바로 설치형 테스트가 가능합니다.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. 안드로이드 **Chrome** 으로 `https://<your-app>.vercel.app` 접속
+2. 메뉴(⋮) → **앱 설치** 또는 **홈 화면에 추가**
+3. 홈 화면에 아이콘이 생기고, 전체화면(standalone) 앱처럼 실행됩니다.
+4. iOS는 **Safari → 공유 → 홈 화면에 추가**.
+
+> 서비스 워커는 프로덕션 빌드에서만 등록됩니다(로컬 `dev` 에선 비활성). 즉 Vercel 배포본에서 설치/오프라인 캐싱이 동작합니다.
+
+---
+
+## 6. 사용 흐름
+
+1. 회원가입/로그인 → **커플 만들기**(만난 날짜 입력) 또는 **초대 코드로 연결**
+2. 홈에서 **D+OOO** 와 다가오는 기념일 확인
+3. **캘린더** 에서 날짜를 눌러 일정/일기/할 일 추가 (PC는 우측 패널 + 드래그 정렬)
+4. **갤러리** 에 사진 다중 업로드 (R2 직행, EXIF 촬영일 자동 인식)
+5. **설정** 에서 프로필/배경 사진, 닉네임, 초대 코드 관리
+
+---
+
+## 폴더 구조 (요약)
+
+```
+src/
+  app/
+    (auth)/        로그인·회원가입 + 인증 액션
+    (app)/         인증 후 화면 (사이드바/하단탭 셸): 홈·캘린더·갤러리·설정
+    api/r2/presign R2 Pre-signed URL 발급 Route Handler
+    onboarding/    커플 연결
+    manifest.ts, icon-*/  PWA 매니페스트·아이콘
+  components/      home·calendar·gallery·shell·pwa UI
+  lib/            supabase 클라이언트, r2, dday, 데이터 헬퍼
+  store/          zustand (user·calendar·gallery)
+supabase_schema.sql  DB 스키마 + RLS + RPC
+design/              브랜드 키비주얼(CI) HTML
+```

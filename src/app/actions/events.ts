@@ -67,6 +67,17 @@ export async function addEvent(input: AddEventInput): Promise<AddEventResult> {
     return { ok: false, error: "커플 연결이 필요해요." };
   }
 
+  // Append after the day's existing events.
+  const { data: last } = await supabase
+    .from("calendar_events")
+    .select("sort_index")
+    .eq("couple_id", profile.couple_id)
+    .eq("event_date", input.event_date)
+    .order("sort_index", { ascending: false })
+    .limit(1)
+    .maybeSingle<{ sort_index: number }>();
+  const nextIndex = (last?.sort_index ?? -1) + 1;
+
   const { data, error } = await supabase
     .from("calendar_events")
     .insert({
@@ -75,6 +86,7 @@ export async function addEvent(input: AddEventInput): Promise<AddEventResult> {
       type: input.type,
       title: input.title || null,
       content: input.content || null,
+      sort_index: nextIndex,
     })
     .select("*")
     .single<CalendarEvent>();
@@ -84,4 +96,26 @@ export async function addEvent(input: AddEventInput): Promise<AddEventResult> {
   }
 
   return { ok: true, event: data };
+}
+
+/**
+ * Persists a new manual ordering for a set of events (drag & drop).
+ * `orderedIds` is the events in their new top-to-bottom order; each row's
+ * sort_index is set to its position. RLS keeps this scoped to the couple.
+ */
+export async function reorderEvents(
+  orderedIds: string[],
+): Promise<{ ok: boolean }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false };
+
+  const results = await Promise.all(
+    orderedIds.map((id, index) =>
+      supabase.from("calendar_events").update({ sort_index: index }).eq("id", id),
+    ),
+  );
+  return { ok: results.every((r) => !r.error) };
 }

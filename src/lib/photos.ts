@@ -7,6 +7,8 @@ export async function getPhotos(): Promise<GalleryPhoto[]> {
   const { data } = await supabase
     .from("gallery_photos")
     .select("*")
+    // Prefer the EXIF capture date; fall back to upload time.
+    .order("taken_at", { ascending: false, nullsFirst: false })
     .order("uploaded_at", { ascending: false });
   return (data as GalleryPhoto[] | null) ?? [];
 }

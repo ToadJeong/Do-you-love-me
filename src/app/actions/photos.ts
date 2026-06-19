@@ -12,7 +12,10 @@ export type AddPhotoResult =
  * The heavy bytes live in R2; Supabase only stores the lightweight link.
  * couple_id is taken from the session, and RLS enforces the same scope.
  */
-export async function addPhoto(r2ImageUrl: string): Promise<AddPhotoResult> {
+export async function addPhoto(
+  r2ImageUrl: string,
+  takenAt?: string | null,
+): Promise<AddPhotoResult> {
   if (!r2ImageUrl) return { ok: false, error: "missing url" };
 
   const supabase = await createClient();
@@ -33,7 +36,11 @@ export async function addPhoto(r2ImageUrl: string): Promise<AddPhotoResult> {
 
   const { data, error } = await supabase
     .from("gallery_photos")
-    .insert({ couple_id: profile.couple_id, r2_image_url: r2ImageUrl })
+    .insert({
+      couple_id: profile.couple_id,
+      r2_image_url: r2ImageUrl,
+      taken_at: takenAt ?? null,
+    })
     .select("*")
     .single<GalleryPhoto>();
 

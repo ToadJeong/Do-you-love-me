@@ -151,7 +151,7 @@ export function MonthCalendar({ initialEvents }: Props) {
       {/* desktop split-view side panel */}
       <aside className="hidden md:block md:w-80 md:shrink-0 md:rounded-2xl md:border md:border-neutral-200 md:p-5">
         {selected ? (
-          <DayEditor date={selected} />
+          <DayEditor date={selected} enableDnd />
         ) : (
           <p className="py-16 text-center text-sm text-neutral-400">
             날짜를 선택하면 일정과 일기를 볼 수 있어요.
