@@ -37,5 +37,6 @@ export interface GalleryPhoto {
   couple_id: string;
   r2_image_url: string;
   taken_at: string | null;
+  event_date: string | null;
   uploaded_at: string;
 }

@@ -17,6 +17,7 @@ export type AddPhotoResult =
 export async function addPhoto(
   r2ImageUrl: string,
   takenAt?: string | null,
+  eventDate?: string | null,
 ): Promise<AddPhotoResult> {
   if (!r2ImageUrl) return { ok: false, error: "missing url" };
 
@@ -42,12 +43,26 @@ export async function addPhoto(
       couple_id: profile.couple_id,
       r2_image_url: r2ImageUrl,
       taken_at: takenAt ?? null,
+      event_date: eventDate ?? null,
     })
     .select("*")
     .single<GalleryPhoto>();
 
   if (error || !data) return { ok: false, error: "저장에 실패했어요." };
   return { ok: true, photo: data };
+}
+
+/** Lists photos attached to a given calendar day (for the day detail view). */
+export async function listPhotosForDate(
+  dateISO: string,
+): Promise<GalleryPhoto[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("gallery_photos")
+    .select("*")
+    .eq("event_date", dateISO)
+    .order("taken_at", { ascending: true, nullsFirst: false });
+  return (data as GalleryPhoto[] | null) ?? [];
 }
 
 /**

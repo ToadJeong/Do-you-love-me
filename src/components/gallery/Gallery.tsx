@@ -1,24 +1,13 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
-import exifr from "exifr";
 import { ImagePlus, Loader2 } from "lucide-react";
 import { useGalleryStore, type GalleryItem } from "@/store/useGalleryStore";
 import { uploadPhotoToR2 } from "@/lib/uploadPhoto";
+import { readTakenAt } from "@/lib/exif";
 import { addPhoto, deletePhoto } from "@/app/actions/photos";
 import type { GalleryPhoto } from "@/lib/types";
 import { PhotoCarousel } from "./PhotoCarousel";
-
-/** Read the EXIF capture date (DateTimeOriginal) from an image, if present. */
-async function readTakenAt(file: File): Promise<string | null> {
-  try {
-    const data = await exifr.parse(file, ["DateTimeOriginal", "CreateDate"]);
-    const d: Date | undefined = data?.DateTimeOriginal ?? data?.CreateDate;
-    return d ? new Date(d).toISOString() : null;
-  } catch {
-    return null;
-  }
-}
 
 interface Props {
   initialPhotos: GalleryPhoto[];
@@ -59,6 +48,7 @@ export function Gallery({ initialPhotos }: Props) {
         couple_id: "",
         r2_image_url: localPreview,
         taken_at: null,
+        event_date: null,
         uploaded_at: new Date().toISOString(),
         pending: true,
         localPreview,
@@ -67,11 +57,12 @@ export function Gallery({ initialPhotos }: Props) {
 
       startUpload(async () => {
         try {
-          // Read EXIF capture date so PC bulk uploads sort by when they were
-          // actually taken, then upload directly to R2.
+          // Read EXIF capture date so bulk uploads sort by when they were
+          // actually taken AND auto-file onto that calendar day.
           const takenAt = await readTakenAt(file);
+          const eventDate = takenAt ? takenAt.slice(0, 10) : null;
           const publicUrl = await uploadPhotoToR2(file);
-          const res = await addPhoto(publicUrl, takenAt);
+          const res = await addPhoto(publicUrl, takenAt, eventDate);
           if (res.ok) {
             reconcile(tempId, res.photo);
           } else {

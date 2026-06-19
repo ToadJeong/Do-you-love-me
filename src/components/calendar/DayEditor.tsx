@@ -20,6 +20,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useCalendarStore } from "@/store/useCalendarStore";
+import { DayPhotos } from "./DayPhotos";
 import { EVENT_STYLES, EVENT_TYPE_ORDER } from "@/lib/eventStyle";
 import {
   addEvent,
@@ -325,6 +326,8 @@ export function DayEditor({ date, onClose, enableDnd = false }: Props) {
       ) : (
         <p className="mb-5 text-sm text-neutral-400">아직 기록이 없어요.</p>
       )}
+
+      <DayPhotos dateISO={dateISO} />
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
         <div className="flex flex-wrap gap-2">

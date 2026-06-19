@@ -72,6 +72,7 @@ create table if not exists public.gallery_photos (
                  references public.couples (id) on delete cascade,
   r2_image_url text not null,
   taken_at     timestamptz,                          -- EXIF capture time (if any)
+  event_date   date,                                 -- the day this photo belongs to (links to the calendar)
   uploaded_at  timestamptz not null default now()
 );
 
@@ -84,12 +85,16 @@ alter table public.calendar_events
   add column if not exists done boolean not null default false;
 alter table public.gallery_photos
   add column if not exists taken_at timestamptz;
+alter table public.gallery_photos
+  add column if not exists event_date date;
 
 -- Helpful indexes for the most common lookups (by couple / by date)
 create index if not exists calendar_events_couple_date_idx
   on public.calendar_events (couple_id, event_date);
 create index if not exists gallery_photos_couple_idx
   on public.gallery_photos (couple_id, uploaded_at desc);
+create index if not exists gallery_photos_couple_date_idx
+  on public.gallery_photos (couple_id, event_date);
 create index if not exists users_couple_idx
   on public.users (couple_id);
 
