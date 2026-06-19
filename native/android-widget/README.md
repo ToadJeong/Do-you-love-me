@@ -60,6 +60,14 @@
 </shape>
 ```
 
+## 위젯 디자인 변형
+
+- `res/layout/dday_widget.xml` — 기본(소형 2x1).
+- `res/layout/dday_widget_large.xml` — 대형(2x2, "Do you love me 💕" 캡션 포함).
+  - `DdayWidgetProvider` 의 `RemoteViews(..., R.layout.dday_widget)` 를
+    `R.layout.dday_widget_large` 로 바꾸면 큰 위젯이 됩니다.
+  - 두 종류를 동시에 제공하려면 provider-info XML과 `<receiver>` 를 하나 더 추가하세요.
+
 ## 주의사항
 
 - 위젯 UI는 HTML/CSS가 아니라 **안드로이드 네이티브(XML)** 입니다. 디자인은 위 XML에서 조정하세요.

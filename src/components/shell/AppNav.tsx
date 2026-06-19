@@ -27,10 +27,10 @@ export function AppNav() {
   return (
     <>
       {/* desktop sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col border-r border-neutral-200 bg-white px-4 py-6 md:flex">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col border-r border-neutral-200 bg-white px-4 py-6 md:flex dark:border-neutral-800 dark:bg-neutral-900">
         <Link href="/" className="mb-8 flex items-center gap-2 px-2">
           <Heart size={20} className="fill-love text-love" />
-          <span className="font-serif text-lg font-semibold text-plum">
+          <span className="font-serif text-lg font-semibold text-plum dark:text-rose">
             Do you love me
           </span>
         </Link>
@@ -43,8 +43,8 @@ export function AppNav() {
                 href={href}
                 className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
                   active
-                    ? "bg-blush text-love"
-                    : "text-neutral-600 hover:bg-neutral-100"
+                    ? "bg-blush text-love dark:bg-love/20"
+                    : "text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800"
                 }`}
               >
                 <Icon size={19} />
@@ -56,7 +56,7 @@ export function AppNav() {
       </aside>
 
       {/* mobile bottom tab */}
-      <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-neutral-200 bg-white/95 backdrop-blur md:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-neutral-200 bg-white/95 backdrop-blur md:hidden dark:border-neutral-800 dark:bg-neutral-900/95">
         {ITEMS.map(({ href, label, icon: Icon }) => {
           const active = isActive(pathname, href);
           return (

@@ -114,13 +114,13 @@ export function SettingsForm({ profile, couple }: Props) {
 
       {/* nickname */}
       <section>
-        <label className="text-sm font-medium text-neutral-700">닉네임</label>
+        <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200">닉네임</label>
         <div className="mt-2 flex gap-2">
           <input
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
             placeholder="닉네임"
-            className="flex-1 rounded-xl border border-neutral-300 px-4 py-2.5 text-base outline-none focus:border-neutral-900"
+            className="flex-1 rounded-xl border border-neutral-300 px-4 py-2.5 text-base outline-none focus:border-love dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
           />
           <button
             type="button"
@@ -134,7 +134,7 @@ export function SettingsForm({ profile, couple }: Props) {
 
       {/* background image */}
       <section>
-        <label className="text-sm font-medium text-neutral-700">
+        <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
           메인 배경 사진
         </label>
         <div className="mt-2 overflow-hidden rounded-2xl border border-neutral-200">
@@ -166,9 +166,9 @@ export function SettingsForm({ profile, couple }: Props) {
       </section>
 
       {/* invite code */}
-      <section className="rounded-2xl bg-neutral-50 p-4 text-sm">
+      <section className="rounded-2xl bg-neutral-50 p-4 text-sm dark:bg-neutral-800">
         <div className="flex items-center justify-between gap-2">
-          <p className="font-medium text-neutral-700">파트너 초대 코드</p>
+          <p className="font-medium text-neutral-700 dark:text-neutral-200">파트너 초대 코드</p>
           <button
             type="button"
             onClick={shareCode}

@@ -49,8 +49,17 @@ export default async function RootLayout({
     <html
       lang="ko"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col bg-white text-neutral-900">
+      <head>
+        {/* Apply the saved theme before paint to avoid a flash. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark')}catch(e){}`,
+          }}
+        />
+      </head>
+      <body className="min-h-full flex flex-col bg-white text-neutral-900 dark:bg-[#14100f] dark:text-neutral-100">
         <AuthProvider userId={userId} profile={profile}>
           {children}
         </AuthProvider>

@@ -31,7 +31,7 @@ export default function LoginPage() {
           autoComplete="email"
           required
           placeholder="이메일"
-          className="w-full rounded-xl border border-neutral-300 px-4 py-3 text-base outline-none focus:border-neutral-900"
+          className="w-full rounded-xl border border-neutral-300 px-4 py-3 text-base outline-none focus:border-love dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
         />
         <input
           name="password"
@@ -39,7 +39,7 @@ export default function LoginPage() {
           autoComplete="current-password"
           required
           placeholder="비밀번호"
-          className="w-full rounded-xl border border-neutral-300 px-4 py-3 text-base outline-none focus:border-neutral-900"
+          className="w-full rounded-xl border border-neutral-300 px-4 py-3 text-base outline-none focus:border-love dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
         />
 
         {state.error && (

@@ -83,7 +83,7 @@ export function MonthCalendar({ initialEvents }: Props) {
             type="button"
             aria-label="이전 달"
             onClick={() => goToMonth(subMonths(cursor, 1))}
-            className="rounded-full p-1.5 hover:bg-neutral-100"
+            className="rounded-full p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-800"
           >
             <ChevronLeft size={20} />
           </button>
@@ -97,7 +97,7 @@ export function MonthCalendar({ initialEvents }: Props) {
             type="button"
             aria-label="다음 달"
             onClick={() => goToMonth(addMonths(cursor, 1))}
-            className="rounded-full p-1.5 hover:bg-neutral-100"
+            className="rounded-full p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-800"
           >
             <ChevronRight size={20} />
           </button>
@@ -122,9 +122,11 @@ export function MonthCalendar({ initialEvents }: Props) {
                 key={key}
                 type="button"
                 onClick={() => setSelected(day)}
-                className={`flex aspect-square flex-col items-center justify-start gap-1 rounded-lg py-1.5 text-sm transition hover:bg-neutral-100 md:aspect-auto md:min-h-16 ${
-                  inMonth ? "text-neutral-900" : "text-neutral-300"
-                } ${isSel ? "bg-blush" : ""}`}
+                className={`flex aspect-square flex-col items-center justify-start gap-1 rounded-lg py-1.5 text-sm transition hover:bg-neutral-100 md:aspect-auto md:min-h-16 dark:hover:bg-neutral-800 ${
+                  inMonth
+                    ? "text-neutral-900 dark:text-neutral-100"
+                    : "text-neutral-300 dark:text-neutral-600"
+                } ${isSel ? "bg-blush dark:bg-love/20" : ""}`}
               >
                 <span
                   className={`flex h-6 w-6 items-center justify-center rounded-full tabular-nums ${
@@ -149,7 +151,7 @@ export function MonthCalendar({ initialEvents }: Props) {
       </div>
 
       {/* desktop split-view side panel */}
-      <aside className="hidden md:block md:w-80 md:shrink-0 md:rounded-2xl md:border md:border-neutral-200 md:p-5">
+      <aside className="hidden md:block md:w-80 md:shrink-0 md:rounded-2xl md:border md:border-neutral-200 md:p-5 dark:md:border-neutral-800">
         {selected ? (
           <DayEditor date={selected} enableDnd />
         ) : (

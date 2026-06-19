@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Class-based dark mode: `dark:` applies under <html class="dark">. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   /* Brand palette (CI) — see design/brand-keyvisual.html */
   --color-blush: #fdeee9; /* Blush Cream — tints, selected states */
@@ -16,4 +19,9 @@ body {
   background: #ffffff;
   color: #171717;
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+.dark body {
+  background: #14100f;
+  color: #ededed;
 }

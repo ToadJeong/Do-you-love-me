@@ -24,7 +24,7 @@ export default function SignupPage() {
           type="text"
           autoComplete="nickname"
           placeholder="닉네임 (선택)"
-          className="w-full rounded-xl border border-neutral-300 px-4 py-3 text-base outline-none focus:border-neutral-900"
+          className="w-full rounded-xl border border-neutral-300 px-4 py-3 text-base outline-none focus:border-love dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
         />
         <input
           name="email"
@@ -32,7 +32,7 @@ export default function SignupPage() {
           autoComplete="email"
           required
           placeholder="이메일"
-          className="w-full rounded-xl border border-neutral-300 px-4 py-3 text-base outline-none focus:border-neutral-900"
+          className="w-full rounded-xl border border-neutral-300 px-4 py-3 text-base outline-none focus:border-love dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
         />
         <input
           name="password"
@@ -41,7 +41,7 @@ export default function SignupPage() {
           required
           minLength={6}
           placeholder="비밀번호 (6자 이상)"
-          className="w-full rounded-xl border border-neutral-300 px-4 py-3 text-base outline-none focus:border-neutral-900"
+          className="w-full rounded-xl border border-neutral-300 px-4 py-3 text-base outline-none focus:border-love dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
         />
 
         {state.error && (

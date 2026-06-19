@@ -62,7 +62,7 @@ function EventRow({
     <li
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
-      className={`group flex items-start gap-2 rounded-xl border border-neutral-200 bg-white p-3 ${
+      className={`group flex items-start gap-2 rounded-xl border border-neutral-200 bg-white p-3 dark:border-neutral-800 dark:bg-neutral-900 ${
         pending ? "opacity-60" : ""
       } ${isDragging ? "shadow-lg" : ""}`}
     >
@@ -339,7 +339,7 @@ export function DayEditor({ date, onClose, enableDnd = false }: Props) {
               className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
                 type === t
                   ? EVENT_STYLES[t].chip + " ring-1 ring-inset ring-current"
-                  : "bg-neutral-100 text-neutral-500"
+                  : "bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400"
               }`}
             >
               {EVENT_STYLES[t].label}
@@ -351,7 +351,7 @@ export function DayEditor({ date, onClose, enableDnd = false }: Props) {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="제목"
-          className="w-full rounded-xl border border-neutral-300 px-4 py-3 text-base outline-none focus:border-love"
+          className="w-full rounded-xl border border-neutral-300 px-4 py-3 text-base outline-none focus:border-love dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
         />
         <textarea
           value={content}
@@ -368,7 +368,7 @@ export function DayEditor({ date, onClose, enableDnd = false }: Props) {
             <button
               type="button"
               onClick={resetForm}
-              className="rounded-xl border border-neutral-300 px-4 py-3 text-base font-medium text-neutral-600"
+              className="rounded-xl border border-neutral-300 px-4 py-3 text-base font-medium text-neutral-600 dark:border-neutral-700 dark:text-neutral-300"
             >
               취소
             </button>

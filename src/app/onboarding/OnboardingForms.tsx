@@ -22,12 +22,12 @@ export function OnboardingForms() {
 
   return (
     <div className="w-full">
-      <div className="mb-6 grid grid-cols-2 rounded-xl bg-neutral-100 p-1 text-sm font-medium">
+      <div className="mb-6 grid grid-cols-2 rounded-xl bg-neutral-100 p-1 text-sm font-medium dark:bg-neutral-800">
         <button
           type="button"
           onClick={() => setTab("create")}
           className={`flex items-center justify-center gap-1.5 rounded-lg py-2.5 transition ${
-            tab === "create" ? "bg-white shadow-sm" : "text-neutral-500"
+            tab === "create" ? "bg-white shadow-sm dark:bg-neutral-700" : "text-neutral-500"
           }`}
         >
           <Heart size={16} /> 커플 만들기
@@ -36,7 +36,7 @@ export function OnboardingForms() {
           type="button"
           onClick={() => setTab("join")}
           className={`flex items-center justify-center gap-1.5 rounded-lg py-2.5 transition ${
-            tab === "join" ? "bg-white shadow-sm" : "text-neutral-500"
+            tab === "join" ? "bg-white shadow-sm dark:bg-neutral-700" : "text-neutral-500"
           }`}
         >
           <Link2 size={16} /> 코드로 연결
@@ -51,7 +51,7 @@ export function OnboardingForms() {
               name="start_date"
               type="date"
               required
-              className="mt-1.5 w-full rounded-xl border border-neutral-300 px-4 py-3 text-base outline-none focus:border-neutral-900"
+              className="mt-1.5 w-full rounded-xl border border-neutral-300 px-4 py-3 text-base outline-none focus:border-love dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
             />
           </label>
           {createState.error && (
@@ -77,7 +77,7 @@ export function OnboardingForms() {
               type="text"
               required
               placeholder="예: 3f1c8e2a-…"
-              className="mt-1.5 w-full rounded-xl border border-neutral-300 px-4 py-3 text-base outline-none focus:border-neutral-900"
+              className="mt-1.5 w-full rounded-xl border border-neutral-300 px-4 py-3 text-base outline-none focus:border-love dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
             />
           </label>
           {joinState.error && (
