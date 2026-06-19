@@ -2,12 +2,20 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, CalendarDays, Images, Settings, Heart } from "lucide-react";
+import {
+  Home,
+  CalendarDays,
+  Images,
+  MessageCircle,
+  Settings,
+  Heart,
+} from "lucide-react";
 
 const ITEMS = [
   { href: "/", label: "홈", icon: Home },
   { href: "/calendar", label: "캘린더", icon: CalendarDays },
   { href: "/gallery", label: "갤러리", icon: Images },
+  { href: "/chat", label: "채팅", icon: MessageCircle },
   { href: "/settings", label: "설정", icon: Settings },
 ] as const;
 

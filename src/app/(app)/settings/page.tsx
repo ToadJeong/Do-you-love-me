@@ -6,6 +6,7 @@ import { signout } from "../../(auth)/actions";
 import { SettingsForm } from "./SettingsForm";
 import { PushToggle } from "@/components/pwa/PushToggle";
 import { ThemeToggle } from "@/components/pwa/ThemeToggle";
+import { AccentPicker } from "@/components/pwa/AccentPicker";
 
 export default async function SettingsPage() {
   const { profile } = await getCurrentUser();
@@ -27,6 +28,7 @@ export default async function SettingsPage() {
       <div className="mt-8 flex flex-col gap-8">
         <PushToggle />
         <ThemeToggle />
+        <AccentPicker />
 
         <section>
           <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200">

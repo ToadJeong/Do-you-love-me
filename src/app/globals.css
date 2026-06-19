@@ -25,3 +25,21 @@ body {
   background: #14100f;
   color: #ededed;
 }
+
+/* Accent presets — override the brand tokens; applied as a class on <html>.
+   Default (no class) keeps the Love Red palette from @theme. */
+.theme-ocean {
+  --color-love: #2f7fb5;
+  --color-love-dark: #286c9b;
+  --color-blush: #e7f1f8;
+}
+.theme-forest {
+  --color-love: #3f9d6e;
+  --color-love-dark: #357f5b;
+  --color-blush: #e8f4ee;
+}
+.theme-grape {
+  --color-love: #8a5cc4;
+  --color-love-dark: #74499f;
+  --color-blush: #f0eafa;
+}

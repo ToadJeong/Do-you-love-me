@@ -9,6 +9,15 @@ export interface Couple {
   id: string;
   start_date: string; // ISO date (YYYY-MM-DD)
   main_bg_url: string | null;
+  memo: string | null;
+  created_at: string;
+}
+
+export interface Message {
+  id: string;
+  couple_id: string;
+  sender_id: string;
+  content: string;
   created_at: string;
 }
 
