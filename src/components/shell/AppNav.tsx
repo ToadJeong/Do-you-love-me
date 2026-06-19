@@ -29,8 +29,8 @@ export function AppNav() {
       {/* desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col border-r border-neutral-200 bg-white px-4 py-6 md:flex">
         <Link href="/" className="mb-8 flex items-center gap-2 px-2">
-          <Heart size={20} className="fill-[#C8546B] text-[#C8546B]" />
-          <span className="font-serif text-lg font-semibold text-[#46272F]">
+          <Heart size={20} className="fill-love text-love" />
+          <span className="font-serif text-lg font-semibold text-plum">
             Do you love me
           </span>
         </Link>
@@ -43,7 +43,7 @@ export function AppNav() {
                 href={href}
                 className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
                   active
-                    ? "bg-[#FDEEE9] text-[#C8546B]"
+                    ? "bg-blush text-love"
                     : "text-neutral-600 hover:bg-neutral-100"
                 }`}
               >
@@ -64,7 +64,7 @@ export function AppNav() {
               key={href}
               href={href}
               className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition ${
-                active ? "text-[#C8546B]" : "text-neutral-400"
+                active ? "text-love" : "text-neutral-400"
               }`}
             >
               <Icon size={21} />

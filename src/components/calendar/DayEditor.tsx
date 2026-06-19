@@ -145,7 +145,7 @@ export function DayEditor({ date, onClose }: Props) {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="제목"
-          className="w-full rounded-xl border border-neutral-300 px-4 py-3 text-base outline-none focus:border-[#C8546B]"
+          className="w-full rounded-xl border border-neutral-300 px-4 py-3 text-base outline-none focus:border-love"
         />
         <textarea
           value={content}
@@ -159,7 +159,7 @@ export function DayEditor({ date, onClose }: Props) {
 
         <button
           type="submit"
-          className="rounded-xl bg-[#C8546B] py-3 text-base font-medium text-white transition active:scale-[0.99]"
+          className="rounded-xl bg-love py-3 text-base font-medium text-white transition hover:bg-love-dark active:scale-[0.99]"
         >
           저장
         </button>

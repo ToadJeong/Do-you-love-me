@@ -60,7 +60,7 @@ export function OnboardingForms() {
           <button
             type="submit"
             disabled={creating}
-            className="rounded-xl bg-neutral-900 py-3 text-base font-medium text-white transition active:scale-[0.99] disabled:opacity-50"
+            className="rounded-xl bg-love py-3 text-base font-medium text-white transition hover:bg-love-dark active:scale-[0.99] disabled:opacity-50"
           >
             {creating ? "만드는 중…" : "커플 시작하기"}
           </button>
@@ -86,7 +86,7 @@ export function OnboardingForms() {
           <button
             type="submit"
             disabled={joining}
-            className="rounded-xl bg-neutral-900 py-3 text-base font-medium text-white transition active:scale-[0.99] disabled:opacity-50"
+            className="rounded-xl bg-love py-3 text-base font-medium text-white transition hover:bg-love-dark active:scale-[0.99] disabled:opacity-50"
           >
             {joining ? "연결 중…" : "커플 연결하기"}
           </button>

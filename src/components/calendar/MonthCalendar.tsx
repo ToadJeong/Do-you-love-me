@@ -124,11 +124,11 @@ export function MonthCalendar({ initialEvents }: Props) {
                 onClick={() => setSelected(day)}
                 className={`flex aspect-square flex-col items-center justify-start gap-1 rounded-lg py-1.5 text-sm transition hover:bg-neutral-100 md:aspect-auto md:min-h-16 ${
                   inMonth ? "text-neutral-900" : "text-neutral-300"
-                } ${isSel ? "bg-[#FDEEE9]" : ""}`}
+                } ${isSel ? "bg-blush" : ""}`}
               >
                 <span
                   className={`flex h-6 w-6 items-center justify-center rounded-full tabular-nums ${
-                    isToday(day) ? "bg-[#C8546B] text-white" : ""
+                    isToday(day) ? "bg-love text-white" : ""
                   }`}
                 >
                   {format(day, "d")}

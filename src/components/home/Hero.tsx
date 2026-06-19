@@ -109,7 +109,7 @@ export function Hero({ startDate, bgUrl, members, myId }: HeroProps) {
                     <span className="font-medium">{a.label}</span>
                     <span className="flex items-center gap-2 text-white/80">
                       <span>{format(a.date, "yyyy.MM.dd")}</span>
-                      <span className="rounded-full bg-white/90 px-2 py-0.5 text-xs font-medium text-[#C8546B] tabular-nums">
+                      <span className="rounded-full bg-white/90 px-2 py-0.5 text-xs font-medium text-love tabular-nums">
                         {a.daysUntil === 0 ? "오늘" : `D-${a.daysUntil}`}
                       </span>
                     </span>

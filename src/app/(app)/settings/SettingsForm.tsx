@@ -109,7 +109,7 @@ export function SettingsForm({ profile, couple }: Props) {
           <button
             type="button"
             onClick={saveNickname}
-            className="rounded-xl bg-neutral-900 px-4 text-sm font-medium text-white"
+            className="rounded-xl bg-love px-4 text-sm font-medium text-white transition hover:bg-love-dark"
           >
             저장
           </button>

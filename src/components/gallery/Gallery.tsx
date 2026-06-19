@@ -78,7 +78,7 @@ export function Gallery({ initialPhotos }: Props) {
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
-          className="inline-flex items-center gap-1.5 rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-white transition active:scale-[0.98]"
+          className="inline-flex items-center gap-1.5 rounded-full bg-love px-4 py-2 text-sm font-medium text-white transition hover:bg-love-dark active:scale-[0.98]"
         >
           {uploading ? (
             <Loader2 size={16} className="animate-spin" />
