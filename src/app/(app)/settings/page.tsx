@@ -3,6 +3,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { getCouple } from "@/lib/couples";
 import { signout } from "../../(auth)/actions";
 import { SettingsForm } from "./SettingsForm";
+import { PushToggle } from "@/components/pwa/PushToggle";
 
 export default async function SettingsPage() {
   const { profile } = await getCurrentUser();
@@ -20,6 +21,10 @@ export default async function SettingsPage() {
       <h1 className="mb-6 text-2xl font-semibold tracking-tight">설정</h1>
 
       <SettingsForm profile={profile} couple={couple} />
+
+      <div className="mt-8">
+        <PushToggle />
+      </div>
 
       <form action={signout} className="mt-10">
         <button

@@ -18,6 +18,6 @@ export const config = {
      *  - PWA assets that must stay publicly reachable (manifest, sw, icons)
      *  - favicon.ico and common static asset extensions
      */
-    "/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|sw.js|apple-icon|icon.svg|icon-192|icon-512|.*\\.(?:svg|png|jpg|jpeg|gif|webp|js|json|webmanifest|ico)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|sw.js|apple-icon|icon.svg|icon-192|icon-512|api/cron|.*\\.(?:svg|png|jpg|jpeg|gif|webp|js|json|webmanifest|ico)$).*)",
   ],
 };

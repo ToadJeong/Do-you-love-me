@@ -54,6 +54,17 @@ create table if not exists public.calendar_events (
   created_at timestamptz not null default now()
 );
 
+-- push_subscriptions : Web Push endpoints per user (for D-Day reminders)
+create table if not exists public.push_subscriptions (
+  id         uuid primary key default gen_random_uuid(),
+  user_id    uuid not null references auth.users (id) on delete cascade,
+  couple_id  uuid references public.couples (id) on delete cascade,
+  endpoint   text not null unique,
+  p256dh     text not null,
+  auth       text not null,
+  created_at timestamptz not null default now()
+);
+
 -- gallery_photos : pointers to heavy media stored in Cloudflare R2
 create table if not exists public.gallery_photos (
   id           uuid primary key default gen_random_uuid(),
@@ -100,10 +111,11 @@ $$;
 -- ---------------------------------------------------------------------
 -- 3. Enable Row Level Security on every table
 -- ---------------------------------------------------------------------
-alter table public.couples         enable row level security;
-alter table public.users           enable row level security;
-alter table public.calendar_events enable row level security;
-alter table public.gallery_photos  enable row level security;
+alter table public.couples            enable row level security;
+alter table public.users              enable row level security;
+alter table public.calendar_events    enable row level security;
+alter table public.gallery_photos     enable row level security;
+alter table public.push_subscriptions enable row level security;
 
 -- ---------------------------------------------------------------------
 -- 4. Policies
@@ -184,6 +196,16 @@ create policy "gallery_photos_all_own"
   to authenticated
   using (couple_id = public.current_couple_id())
   with check (couple_id = public.current_couple_id());
+
+-- ===== push_subscriptions ===========================================
+-- A user manages only their own push subscriptions. The cron job that sends
+-- notifications uses the service role key, which bypasses RLS.
+drop policy if exists "push_subscriptions_all_own" on public.push_subscriptions;
+create policy "push_subscriptions_all_own"
+  on public.push_subscriptions for all
+  to authenticated
+  using (user_id = auth.uid())
+  with check (user_id = auth.uid());
 
 -- ---------------------------------------------------------------------
 -- 5. Couple connection RPCs
