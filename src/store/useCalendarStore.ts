@@ -23,6 +23,8 @@ interface CalendarState {
   reconcile: (tempId: string, real: CalendarEvent) => void;
   /** Remove an event (used to roll back a failed optimistic add). */
   remove: (id: string) => void;
+  /** Insert-or-replace by id (used by realtime INSERT/UPDATE events). */
+  upsert: (event: CalendarEvent) => void;
   /** Apply a new manual order: assign sort_index by position for these ids. */
   reorder: (orderedIds: string[]) => void;
 }
@@ -57,6 +59,16 @@ export const useCalendarStore = create<CalendarState>((set) => ({
 
   remove: (id) =>
     set((s) => ({ events: s.events.filter((e) => e.id !== id) })),
+
+  upsert: (event) =>
+    set((s) => {
+      const exists = s.events.some((e) => e.id === event.id);
+      return {
+        events: exists
+          ? s.events.map((e) => (e.id === event.id ? event : e))
+          : [...s.events, event],
+      };
+    }),
 
   reorder: (orderedIds) =>
     set((s) => {

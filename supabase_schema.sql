@@ -262,6 +262,31 @@ begin
 end;
 $$;
 
+-- ---------------------------------------------------------------------
+-- 6. Realtime
+--    Add the shared tables to the supabase_realtime publication so both
+--    partners' screens update live. RLS still applies to the stream, and the
+--    client additionally filters by couple_id.
+-- ---------------------------------------------------------------------
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime'
+      and schemaname = 'public' and tablename = 'calendar_events'
+  ) then
+    alter publication supabase_realtime add table public.calendar_events;
+  end if;
+
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime'
+      and schemaname = 'public' and tablename = 'gallery_photos'
+  ) then
+    alter publication supabase_realtime add table public.gallery_photos;
+  end if;
+end $$;
+
 -- =====================================================================
 --  Done.
 -- =====================================================================

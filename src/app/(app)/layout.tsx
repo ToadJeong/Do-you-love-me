@@ -1,4 +1,5 @@
 import { AppNav } from "@/components/shell/AppNav";
+import { RealtimeProvider } from "@/components/realtime/RealtimeProvider";
 
 /**
  * Shell for the authenticated app: responsive primary nav (bottom tab on
@@ -11,6 +12,7 @@ export default function AppLayout({
   return (
     <div className="md:pl-60">
       <AppNav />
+      <RealtimeProvider />
       {/* pb leaves room for the mobile bottom tab bar */}
       <div className="min-h-dvh pb-16 md:pb-0">{children}</div>
     </div>

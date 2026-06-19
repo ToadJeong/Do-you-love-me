@@ -20,6 +20,8 @@ interface GalleryState {
   addOptimistic: (item: GalleryItem) => void;
   reconcile: (tempId: string, real: GalleryPhoto) => void;
   remove: (id: string) => void;
+  /** Insert-or-replace by id (used by realtime INSERT/UPDATE events). */
+  upsert: (photo: GalleryPhoto) => void;
 }
 
 export const useGalleryStore = create<GalleryState>((set) => ({
@@ -38,4 +40,14 @@ export const useGalleryStore = create<GalleryState>((set) => ({
 
   remove: (id) =>
     set((s) => ({ photos: s.photos.filter((p) => p.id !== id) })),
+
+  upsert: (photo) =>
+    set((s) => {
+      const exists = s.photos.some((p) => p.id === photo.id);
+      return {
+        photos: exists
+          ? s.photos.map((p) => (p.id === photo.id ? { ...photo } : p))
+          : [{ ...photo }, ...s.photos],
+      };
+    }),
 }));
