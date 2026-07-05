@@ -77,6 +77,18 @@ create table if not exists public.messages (
 create index if not exists messages_couple_idx
   on public.messages (couple_id, created_at);
 
+-- bucket_items : shared couple bucket list (dateless goals)
+create table if not exists public.bucket_items (
+  id         uuid primary key default gen_random_uuid(),
+  couple_id  uuid not null references public.couples (id) on delete cascade,
+  title      text not null,
+  done       boolean not null default false,
+  sort_index integer not null default 0,
+  created_at timestamptz not null default now()
+);
+create index if not exists bucket_items_couple_idx
+  on public.bucket_items (couple_id, sort_index);
+
 -- gallery_photos : pointers to heavy media stored in Cloudflare R2
 create table if not exists public.gallery_photos (
   id           uuid primary key default gen_random_uuid(),
@@ -134,6 +146,7 @@ alter table public.calendar_events    enable row level security;
 alter table public.gallery_photos     enable row level security;
 alter table public.push_subscriptions enable row level security;
 alter table public.messages           enable row level security;
+alter table public.bucket_items       enable row level security;
 
 -- ---------------------------------------------------------------------
 -- 4. Policies
@@ -237,6 +250,14 @@ create policy "messages_delete_own"
   on public.messages for delete
   to authenticated
   using (sender_id = auth.uid());
+
+-- ===== bucket_items =================================================
+drop policy if exists "bucket_items_all_own" on public.bucket_items;
+create policy "bucket_items_all_own"
+  on public.bucket_items for all
+  to authenticated
+  using (couple_id = public.current_couple_id())
+  with check (couple_id = public.current_couple_id());
 
 -- ===== push_subscriptions ===========================================
 -- A user manages only their own push subscriptions. The cron job that sends
@@ -358,6 +379,14 @@ begin
       and schemaname = 'public' and tablename = 'messages'
   ) then
     alter publication supabase_realtime add table public.messages;
+  end if;
+
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime'
+      and schemaname = 'public' and tablename = 'bucket_items'
+  ) then
+    alter publication supabase_realtime add table public.bucket_items;
   end if;
 end $$;
 

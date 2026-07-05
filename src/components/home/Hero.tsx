@@ -2,9 +2,13 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { format } from "date-fns";
+import { differenceInCalendarDays, format, parseISO } from "date-fns";
 import { Heart } from "lucide-react";
-import { getDayCount, getUpcomingAnniversaries } from "@/lib/dday";
+import {
+  getDayCount,
+  getUpcomingAnniversaries,
+  type Anniversary,
+} from "@/lib/dday";
 import { syncDdayToWidget } from "@/lib/widgetSync";
 import type { AppUser } from "@/lib/types";
 
@@ -13,6 +17,7 @@ interface HeroProps {
   bgUrl: string | null;
   members: AppUser[];
   myId: string;
+  customAnniversaries: { label: string; dateISO: string }[];
 }
 
 function Avatar({ user, fallback }: { user?: AppUser; fallback: string }) {
@@ -38,10 +43,27 @@ function Avatar({ user, fallback }: { user?: AppUser; fallback: string }) {
  * gradient for legibility, a profile-heart header, the big D+N headline, and a
  * glassmorphism card of upcoming anniversaries.
  */
-export function Hero({ startDate, bgUrl, members, myId }: HeroProps) {
+export function Hero({
+  startDate,
+  bgUrl,
+  members,
+  myId,
+  customAnniversaries,
+}: HeroProps) {
   const now = new Date();
   const dayCount = getDayCount(startDate, now);
-  const anniversaries = getUpcomingAnniversaries(startDate, 3, now);
+
+  // Merge auto milestones (100-day / yearly) with the couple's own anniversary
+  // events, nearest first.
+  const custom: Anniversary[] = customAnniversaries.map((c) => ({
+    label: c.label,
+    date: parseISO(c.dateISO),
+    daysUntil: differenceInCalendarDays(parseISO(c.dateISO), now),
+  }));
+  const anniversaries = [...getUpcomingAnniversaries(startDate, 4, now), ...custom]
+    .filter((a) => a.daysUntil >= 0)
+    .sort((a, b) => a.daysUntil - b.daysUntil)
+    .slice(0, 4);
 
   const me = members.find((m) => m.id === myId);
   const partner = members.find((m) => m.id !== myId);

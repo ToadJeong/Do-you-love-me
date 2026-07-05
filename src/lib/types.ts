@@ -21,6 +21,15 @@ export interface Message {
   created_at: string;
 }
 
+export interface BucketItem {
+  id: string;
+  couple_id: string;
+  title: string;
+  done: boolean;
+  sort_index: number;
+  created_at: string;
+}
+
 export interface AppUser {
   id: string;
   couple_id: string | null;

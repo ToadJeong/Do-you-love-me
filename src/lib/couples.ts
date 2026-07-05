@@ -11,6 +11,27 @@ export async function getCouple(): Promise<Couple | null> {
   return data ?? null;
 }
 
+/**
+ * Fetch upcoming user-created anniversaries (calendar events of type
+ * 'anniversary' dated today or later) so they can appear as countdowns on the
+ * home screen alongside the auto-computed milestones.
+ */
+export async function getUpcomingCustomAnniversaries(
+  todayISO: string,
+): Promise<{ label: string; dateISO: string }[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("calendar_events")
+    .select("event_date, title")
+    .eq("type", "anniversary")
+    .gte("event_date", todayISO)
+    .order("event_date", { ascending: true })
+    .limit(10);
+  return ((data as { event_date: string; title: string | null }[] | null) ?? [])
+    .filter((e) => e.title)
+    .map((e) => ({ label: e.title as string, dateISO: e.event_date }));
+}
+
 /** Fetch both members of the current user's couple (self + partner). */
 export async function getCoupleMembers(coupleId: string): Promise<AppUser[]> {
   const supabase = await createClient();

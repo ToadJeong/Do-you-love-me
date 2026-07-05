@@ -4,7 +4,11 @@ import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Upload, Copy, Check } from "lucide-react";
 import { uploadPhotoToR2 } from "@/lib/uploadPhoto";
-import { updateProfile, updateCoupleBackground } from "@/app/actions/settings";
+import {
+  updateProfile,
+  updateCoupleBackground,
+  updateCoupleStartDate,
+} from "@/app/actions/settings";
 import type { AppUser, Couple } from "@/lib/types";
 
 interface Props {
@@ -15,6 +19,7 @@ interface Props {
 export function SettingsForm({ profile, couple }: Props) {
   const router = useRouter();
   const [nickname, setNickname] = useState(profile.nickname ?? "");
+  const [startDate, setStartDate] = useState(couple.start_date);
   const [avatar, setAvatar] = useState(profile.profile_image_url);
   const [bg, setBg] = useState(couple.main_bg_url);
   const [msg, setMsg] = useState<string | null>(null);
@@ -80,6 +85,15 @@ export function SettingsForm({ profile, couple }: Props) {
     });
   }
 
+  function saveStartDate() {
+    setMsg(null);
+    start(async () => {
+      const res = await updateCoupleStartDate(startDate);
+      setMsg(res.ok ? "저장되었어요." : res.error);
+      if (res.ok) router.refresh();
+    });
+  }
+
   return (
     <div className="flex flex-col gap-8">
       {/* profile image */}
@@ -125,6 +139,28 @@ export function SettingsForm({ profile, couple }: Props) {
           <button
             type="button"
             onClick={saveNickname}
+            className="rounded-xl bg-love px-4 text-sm font-medium text-white transition hover:bg-love-dark"
+          >
+            저장
+          </button>
+        </div>
+      </section>
+
+      {/* start date */}
+      <section>
+        <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
+          사귄 날 (D-Day 기준)
+        </label>
+        <div className="mt-2 flex gap-2">
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="flex-1 rounded-xl border border-neutral-300 px-4 py-2.5 text-base outline-none focus:border-love dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+          />
+          <button
+            type="button"
+            onClick={saveStartDate}
             className="rounded-xl bg-love px-4 text-sm font-medium text-white transition hover:bg-love-dark"
           >
             저장
