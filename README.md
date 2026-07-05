@@ -108,6 +108,32 @@ npm run lint     # ESLint
 
 ---
 
+## 5-1. 네이티브 안드로이드 앱 (Capacitor)
+
+웹뷰로 감싼 실제 APK/AAB. `android/` 네이티브 프로젝트가 이미 저장소에 포함되어 있고,
+홈 화면 **D-Day 위젯**(`DdayWidgetProvider`)까지 통합돼 있습니다.
+
+**전제:** Android Studio(+ JDK 17, Android SDK) 설치.
+
+1. **접속 주소 설정** — `capacitor.config.json` 의 `server.url` 을 배포된 Vercel 주소로 변경
+   (예: `https://our-love-app.vercel.app`). 이 앱은 원격 PWA를 웹뷰로 로드합니다.
+2. **동기화 & 열기**
+   ```bash
+   npm install
+   npx cap sync android
+   npx cap open android      # 또는: cd android && ./gradlew assembleDebug
+   ```
+3. Android Studio에서 실행하면 앱이 설치됩니다.
+4. **위젯**: 홈 화면 → 위젯 추가 → "Do you love me". 웹앱을 한 번 열어 로그인하면
+   D-Day가 `@capacitor/preferences` 로 네이티브에 저장되어 위젯에 표시됩니다.
+
+> **위젯 데이터 흐름**: 웹의 `syncDdayToWidget()` → SharedPreferences("CapacitorStorage")
+> → `DdayWidgetProvider` 가 읽어 매 자정(AlarmManager) "D+N" 갱신.
+
+> **푸시 알림 주의**: 현재 알림은 Web Push 기반입니다. 웹뷰 안에서는 불안정할 수 있으니
+> 네이티브 앱에서 확실한 푸시가 필요하면 FCM + `@capacitor/push-notifications` 로 전환하세요.
+> (테스트 단계에서는 PWA 설치본으로 푸시를 쓰는 걸 권장합니다.)
+
 ## 6. 사용 흐름
 
 1. 회원가입/로그인 → **커플 만들기**(만난 날짜 입력) 또는 **초대 코드로 연결**

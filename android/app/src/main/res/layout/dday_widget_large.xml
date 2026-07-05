@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Alternate "large card" widget layout (2x2). To offer it as a second widget,
+  add another <receiver> + provider-info XML pointing at this layout, or switch
+  DdayWidgetProvider's RemoteViews to this layout for a bigger look.
+  Place at: android/app/src/main/res/layout/dday_widget_large.xml
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="20dp"
+    android:background="@drawable/dday_widget_bg">
+
+    <TextView
+        android:id="@+id/widget_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="우리가 만난 지"
+        android:textColor="#FFFFFFFF"
+        android:textSize="14sp"
+        android:alpha="0.85" />
+
+    <TextView
+        android:id="@+id/widget_dday"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="D+1"
+        android:textColor="#FFFFFFFF"
+        android:textStyle="bold"
+        android:textSize="48sp" />
+
+    <TextView
+        android:id="@+id/widget_caption"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:text="Do you love me 💕"
+        android:textColor="#FFFFFFFF"
+        android:textSize="12sp"
+        android:alpha="0.75" />
+</LinearLayout>
