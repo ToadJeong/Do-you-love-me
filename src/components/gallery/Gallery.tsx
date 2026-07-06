@@ -83,6 +83,12 @@ export function Gallery({ initialPhotos }: Props) {
     <section className="w-full">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-base font-semibold">우리의 갤러리</h2>
+        <a
+          href="/fourcut"
+          className="mr-2 rounded-full border border-love px-3.5 py-2 text-sm font-medium text-love"
+        >
+          인생네컷 📸
+        </a>
         <button
           type="button"
           onClick={() => inputRef.current?.click()}

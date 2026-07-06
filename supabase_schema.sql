@@ -53,6 +53,7 @@ create table if not exists public.calendar_events (
   content    text,
   sort_index integer not null default 0,            -- manual ordering (drag & drop)
   done       boolean not null default false,        -- completion state for 'todo' items
+  owner_id   uuid references auth.users (id) on delete cascade,  -- null = couple event, set = personal
   created_at timestamptz not null default now()
 );
 
@@ -145,6 +146,8 @@ alter table public.calendar_events
   add column if not exists sort_index integer not null default 0;
 alter table public.calendar_events
   add column if not exists done boolean not null default false;
+alter table public.calendar_events
+  add column if not exists owner_id uuid references auth.users (id) on delete cascade;
 alter table public.gallery_photos
   add column if not exists taken_at timestamptz;
 alter table public.gallery_photos

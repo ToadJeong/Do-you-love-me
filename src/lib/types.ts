@@ -81,6 +81,8 @@ export interface CalendarEvent {
   content: string | null;
   sort_index: number;
   done: boolean;
+  /** null = couple event; a user id = that partner's personal event. */
+  owner_id: string | null;
   created_at: string;
 }
 

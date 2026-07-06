@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   Home,
   CalendarDays,
+  BookHeart,
   Images,
   Map,
   MessageCircle,
@@ -16,6 +17,7 @@ import {
 const ITEMS = [
   { href: "/", label: "홈", icon: Home },
   { href: "/calendar", label: "캘린더", icon: CalendarDays },
+  { href: "/diary", label: "다이어리", icon: BookHeart },
   { href: "/gallery", label: "갤러리", icon: Images },
   { href: "/map", label: "지도", icon: Map },
   { href: "/chat", label: "채팅", icon: MessageCircle },
@@ -77,11 +79,11 @@ export function AppNav() {
               <Link
                 key={href}
                 href={href}
-                className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] font-medium transition ${
+                className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-[9px] font-medium transition ${
                   active ? "text-love" : "text-neutral-400"
                 }`}
               >
-                <Icon size={20} />
+                <Icon size={19} />
                 {label}
               </Link>
             );

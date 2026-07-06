@@ -38,6 +38,8 @@ export interface AddEventInput {
   type: CalendarEventType;
   title: string;
   content?: string;
+  /** "couple" (default) or "mine" — personal events carry the author's id. */
+  scope?: "couple" | "mine";
 }
 
 export type AddEventResult =
@@ -87,6 +89,7 @@ export async function addEvent(input: AddEventInput): Promise<AddEventResult> {
       title: input.title || null,
       content: input.content || null,
       sort_index: nextIndex,
+      owner_id: input.scope === "mine" ? user.id : null,
     })
     .select("*")
     .single<CalendarEvent>();

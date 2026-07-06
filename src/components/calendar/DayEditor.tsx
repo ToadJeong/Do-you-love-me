@@ -20,6 +20,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useCalendarStore } from "@/store/useCalendarStore";
+import { useUserStore } from "@/store/useUserStore";
 import { useExternalStore } from "@/store/useExternalStore";
 import { DayPhotos } from "./DayPhotos";
 import { EVENT_STYLES, EVENT_TYPE_ORDER } from "@/lib/eventStyle";
@@ -42,12 +43,14 @@ interface Props {
 
 function EventRow({
   ev,
+  myId,
   enableDnd,
   onToggleDone,
   onEdit,
   onDelete,
 }: {
   ev: CalendarEvent;
+  myId: string | null;
   enableDnd: boolean;
   onToggleDone: (ev: CalendarEvent) => void;
   onEdit: (ev: CalendarEvent) => void;
@@ -108,6 +111,11 @@ function EventRow({
           >
             {ev.title}
           </span>
+          {ev.owner_id && (
+            <span className="rounded-full bg-beige px-1.5 py-0.5 text-[10px] font-medium text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400">
+              {ev.owner_id === myId ? "내 일정" : "상대 일정"}
+            </span>
+          )}
         </div>
         {ev.content && (
           <p className="mt-1 whitespace-pre-wrap text-sm text-neutral-600 dark:text-neutral-300">
@@ -173,6 +181,8 @@ export function DayEditor({ date, onClose, enableDnd = false }: Props) {
   );
 
   const [type, setType] = useState<CalendarEventType>("schedule");
+  const [scope, setScope] = useState<"couple" | "mine">("couple");
+  const myId = useUserStore((st) => st.userId);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -259,6 +269,7 @@ export function DayEditor({ date, onClose, enableDnd = false }: Props) {
       content: payload.content || null,
       sort_index: events.length,
       done: false,
+      owner_id: scope === "mine" ? myId : null,
       created_at: new Date().toISOString(),
     };
     addOptimistic(optimistic);
@@ -270,6 +281,7 @@ export function DayEditor({ date, onClose, enableDnd = false }: Props) {
         type: payload.type,
         title: payload.title,
         content: payload.content,
+        scope,
       });
       if (res.ok) reconcile(tempId, res.event);
       else {
@@ -321,6 +333,7 @@ export function DayEditor({ date, onClose, enableDnd = false }: Props) {
                 <EventRow
                   key={ev.id}
                   ev={ev}
+                  myId={myId}
                   enableDnd={enableDnd}
                   onToggleDone={handleToggleDone}
                   onEdit={startEdit}
@@ -368,6 +381,28 @@ export function DayEditor({ date, onClose, enableDnd = false }: Props) {
               }`}
             >
               {EVENT_STYLES[t].label}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex gap-2">
+          {(
+            [
+              ["couple", "커플 일정 💕"],
+              ["mine", "개인 일정 👤"],
+            ] as const
+          ).map(([k, label]) => (
+            <button
+              key={k}
+              type="button"
+              onClick={() => setScope(k)}
+              className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
+                scope === k
+                  ? "bg-love text-white"
+                  : "bg-neutral-100 text-neutral-500 dark:bg-neutral-800"
+              }`}
+            >
+              {label}
             </button>
           ))}
         </div>
