@@ -68,6 +68,9 @@ const BALANCE_QUESTIONS: [string, string, string][] = [
   ["둘 중 하나만", "주말 늦잠", "주말 여행"],
 ];
 
+/** Photo message: [[img:<url>]] (https for sent, blob: for optimistic previews) */
+export const IMG_RE = /^\[\[img:((?:https?|blob):[^\]]+)\]\]$/;
+
 export const GAME_RES = {
   rps: /^\[\[game:rps:([a-z0-9-]+)\]\]$/,
   rpsm: /^\[\[game:rpsm:([a-z0-9-]+):(rock|paper|scissors)\]\]$/,
@@ -280,6 +283,24 @@ export function MessageBody({
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img src={emoticonSrc(emo[1], emo[2])} alt="이모티콘" className="h-28 w-28" />
+    );
+  }
+
+  // --- photo ---
+  const img = c.match(IMG_RE);
+  if (img) {
+    return (
+      <a href={img[1]} target="_blank" rel="noreferrer" className="block max-w-[70%]">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={img[1]}
+          alt="사진"
+          loading="lazy"
+          className={`max-h-72 w-full rounded-2xl object-cover ${
+            message.id.startsWith("temp-") ? "opacity-60" : ""
+          }`}
+        />
+      </a>
     );
   }
 

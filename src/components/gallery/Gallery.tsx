@@ -1,7 +1,8 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
-import { ImagePlus, Loader2 } from "lucide-react";
+import { ImagePlus, Loader2, Wand2 } from "lucide-react";
+import { PhotoEditor } from "@/components/photo/PhotoEditor";
 import { useGalleryStore, type GalleryItem } from "@/store/useGalleryStore";
 import { uploadPhotoToR2 } from "@/lib/uploadPhoto";
 import { readTakenAt } from "@/lib/exif";
@@ -30,15 +31,14 @@ export function Gallery({ initialPhotos }: Props) {
   const upsert = useGalleryStore((s) => s.upsert);
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const editRef = useRef<HTMLInputElement>(null);
+  const [editFile, setEditFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [uploading, startUpload] = useTransition();
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
 
-  function handleFiles(files: FileList | null) {
-    if (!files || files.length === 0) return;
-    setError(null);
-
-    for (const file of Array.from(files)) {
+  function uploadOne(file: File) {
+    {
       const tempId = `temp-${crypto.randomUUID()}`;
       const localPreview = URL.createObjectURL(file);
 
@@ -79,10 +79,34 @@ export function Gallery({ initialPhotos }: Props) {
     }
   }
 
+  function handleFiles(files: FileList | null) {
+    if (!files || files.length === 0) return;
+    setError(null);
+    for (const file of Array.from(files)) uploadOne(file);
+  }
+
   return (
     <section className="w-full">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-base font-semibold">우리의 갤러리</h2>
+        <button
+          type="button"
+          aria-label="편집 후 올리기"
+          onClick={() => editRef.current?.click()}
+          className="mr-2 inline-flex items-center gap-1 rounded-full border border-love px-3 py-2 text-sm font-medium text-love"
+        >
+          <Wand2 size={15} /> 편집
+        </button>
+        <input
+          ref={editRef}
+          type="file"
+          accept="image/*"
+          hidden
+          onChange={(e) => {
+            if (e.target.files?.[0]) setEditFile(e.target.files[0]);
+            e.target.value = "";
+          }}
+        />
         <a
           href="/fourcut"
           className="mr-2 rounded-full border border-love px-3.5 py-2 text-sm font-medium text-love"
@@ -157,6 +181,16 @@ export function Gallery({ initialPhotos }: Props) {
                 setError("삭제에 실패했어요.");
               }
             });
+          }}
+        />
+      )}
+      {editFile && (
+        <PhotoEditor
+          file={editFile}
+          onClose={() => setEditFile(null)}
+          onDone={(edited) => {
+            setEditFile(null);
+            uploadOne(edited);
           }}
         />
       )}

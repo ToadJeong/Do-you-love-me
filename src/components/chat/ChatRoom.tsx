@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
-import { Send, Pin, Loader2, Smile, Gamepad2 } from "lucide-react";
+import { Send, Pin, Loader2, Smile, Gamepad2, ImagePlus } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { sendMessage } from "@/app/actions/chat";
+import { uploadPhotoToR2 } from "@/lib/uploadPhoto";
 import { updateCoupleMemo } from "@/app/actions/settings";
 import { EmoticonPicker, GameMenu, MessageBody } from "./ChatExtras";
 import type { Message } from "@/lib/types";
@@ -21,6 +22,7 @@ export function ChatRoom({ initialMessages, initialMemo, myId, coupleId }: Props
   const [panel, setPanel] = useState<"none" | "emoji" | "game">("none");
   const [, startSend] = useTransition();
   const bottomRef = useRef<HTMLDivElement>(null);
+  const photoRef = useRef<HTMLInputElement>(null);
 
   // --- pinned memo ---
   const [memo, setMemo] = useState(initialMemo ?? "");
@@ -79,6 +81,39 @@ export function ChatRoom({ initialMessages, initialMemo, myId, coupleId }: Props
           : prev.map((m) => (m.id === tempId ? res.message : m));
       });
     });
+  }
+
+  /** Send photos as-is (originals, no re-encoding), several at once. */
+  function sendPhotos(list: FileList | null) {
+    if (!list || list.length === 0) return;
+    for (const file of Array.from(list)) {
+      const tempId = `temp-${crypto.randomUUID()}`;
+      const preview = URL.createObjectURL(file);
+      addMessage({
+        id: tempId,
+        couple_id: coupleId,
+        sender_id: myId,
+        content: `[[img:${preview}]]`,
+        created_at: new Date().toISOString(),
+      });
+      startSend(async () => {
+        try {
+          const url = await uploadPhotoToR2(file);
+          const res = await sendMessage(`[[img:${url}]]`);
+          setMessages((prev) => {
+            if (!res.ok) return prev.filter((m) => m.id !== tempId);
+            const exists = prev.some((m) => m.id === res.message.id);
+            return exists
+              ? prev.filter((m) => m.id !== tempId)
+              : prev.map((m) => (m.id === tempId ? res.message : m));
+          });
+        } catch {
+          setMessages((prev) => prev.filter((m) => m.id !== tempId));
+        } finally {
+          URL.revokeObjectURL(preview);
+        }
+      });
+    }
   }
 
   function handleSend(e: React.FormEvent) {
@@ -173,6 +208,25 @@ export function ChatRoom({ initialMessages, initialMemo, myId, coupleId }: Props
         onSubmit={handleSend}
         className="flex items-center gap-2 border-t border-neutral-200 px-4 py-3 dark:border-neutral-800"
       >
+        <button
+          type="button"
+          aria-label="사진 보내기"
+          onClick={() => photoRef.current?.click()}
+          className="shrink-0 rounded-full p-2 text-neutral-400 transition"
+        >
+          <ImagePlus size={22} />
+        </button>
+        <input
+          ref={photoRef}
+          type="file"
+          accept="image/*"
+          multiple
+          hidden
+          onChange={(e) => {
+            sendPhotos(e.target.files);
+            e.target.value = "";
+          }}
+        />
         <button
           type="button"
           aria-label="이모티콘"
