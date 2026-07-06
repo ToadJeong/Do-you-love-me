@@ -6,7 +6,9 @@ import {
   Home,
   CalendarDays,
   Images,
+  Map,
   MessageCircle,
+  UserRound,
   Settings,
   Heart,
 } from "lucide-react";
@@ -15,7 +17,10 @@ const ITEMS = [
   { href: "/", label: "홈", icon: Home },
   { href: "/calendar", label: "캘린더", icon: CalendarDays },
   { href: "/gallery", label: "갤러리", icon: Images },
+  { href: "/map", label: "지도", icon: Map },
   { href: "/chat", label: "채팅", icon: MessageCircle },
+  // Profile is desktop-sidebar only; on mobile it's reached from Settings.
+  { href: "/profile", label: "프로필", icon: UserRound, mobileHidden: true },
   { href: "/settings", label: "설정", icon: Settings },
 ] as const;
 
@@ -35,7 +40,7 @@ export function AppNav() {
   return (
     <>
       {/* desktop sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col border-r border-neutral-200 bg-white px-4 py-6 md:flex dark:border-neutral-800 dark:bg-neutral-900">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col border-r border-neutral-200 bg-cream px-4 py-6 md:flex dark:border-neutral-800 dark:bg-neutral-900">
         <Link href="/" className="mb-8 flex items-center gap-2 px-2">
           <Heart size={20} className="fill-love text-love" />
           <span className="font-serif text-lg font-semibold text-plum dark:text-rose">
@@ -64,22 +69,24 @@ export function AppNav() {
       </aside>
 
       {/* mobile bottom tab */}
-      <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-neutral-200 bg-white/95 backdrop-blur md:hidden dark:border-neutral-800 dark:bg-neutral-900/95">
-        {ITEMS.map(({ href, label, icon: Icon }) => {
-          const active = isActive(pathname, href);
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition ${
-                active ? "text-love" : "text-neutral-400"
-              }`}
-            >
-              <Icon size={21} />
-              {label}
-            </Link>
-          );
-        })}
+      <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-neutral-200 bg-cream/95 backdrop-blur md:hidden dark:border-neutral-800 dark:bg-neutral-900/95">
+        {ITEMS.filter((i) => !("mobileHidden" in i && i.mobileHidden)).map(
+          ({ href, label, icon: Icon }) => {
+            const active = isActive(pathname, href);
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] font-medium transition ${
+                  active ? "text-love" : "text-neutral-400"
+                }`}
+              >
+                <Icon size={20} />
+                {label}
+              </Link>
+            );
+          },
+        )}
       </nav>
     </>
   );

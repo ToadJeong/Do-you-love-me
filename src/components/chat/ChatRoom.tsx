@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
-import { Send, Pin, Loader2 } from "lucide-react";
+import { Send, Pin, Loader2, Smile, Gamepad2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { sendMessage } from "@/app/actions/chat";
 import { updateCoupleMemo } from "@/app/actions/settings";
+import { EmoticonPicker, GameMenu, MessageBody } from "./ChatExtras";
 import type { Message } from "@/lib/types";
 
 interface Props {
@@ -17,6 +18,7 @@ interface Props {
 export function ChatRoom({ initialMessages, initialMemo, myId, coupleId }: Props) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [text, setText] = useState("");
+  const [panel, setPanel] = useState<"none" | "emoji" | "game">("none");
   const [, startSend] = useTransition();
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -55,11 +57,8 @@ export function ChatRoom({ initialMessages, initialMemo, myId, coupleId }: Props
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  function handleSend(e: React.FormEvent) {
-    e.preventDefault();
-    const content = text.trim();
-    if (!content) return;
-
+  function sendContent(content: string) {
+    if (!content.trim()) return;
     const tempId = `temp-${crypto.randomUUID()}`;
     addMessage({
       id: tempId,
@@ -68,7 +67,6 @@ export function ChatRoom({ initialMessages, initialMemo, myId, coupleId }: Props
       content,
       created_at: new Date().toISOString(),
     });
-    setText("");
 
     startSend(async () => {
       const res = await sendMessage(content);
@@ -81,6 +79,14 @@ export function ChatRoom({ initialMessages, initialMemo, myId, coupleId }: Props
           : prev.map((m) => (m.id === tempId ? res.message : m));
       });
     });
+  }
+
+  function handleSend(e: React.FormEvent) {
+    e.preventDefault();
+    const content = text.trim();
+    if (!content) return;
+    setText("");
+    sendContent(content);
   }
 
   function saveMemo() {
@@ -132,26 +138,61 @@ export function ChatRoom({ initialMessages, initialMemo, myId, coupleId }: Props
               key={m.id}
               className={`flex ${mine ? "justify-end" : "justify-start"}`}
             >
-              <div
-                className={`max-w-[75%] whitespace-pre-wrap break-words rounded-2xl px-3.5 py-2 text-sm ${
-                  mine
-                    ? "rounded-br-sm bg-love text-white"
-                    : "rounded-bl-sm bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100"
-                }`}
-              >
-                {m.content}
-              </div>
+              <MessageBody
+                message={m}
+                myId={myId}
+                all={messages}
+                onSend={sendContent}
+              />
             </div>
           );
         })}
         <div ref={bottomRef} />
       </div>
 
+      {/* emoticon / game panels */}
+      {panel === "emoji" && (
+        <EmoticonPicker
+          onPick={(content) => {
+            sendContent(content);
+            setPanel("none");
+          }}
+        />
+      )}
+      {panel === "game" && (
+        <GameMenu
+          onSend={(content) => {
+            sendContent(content);
+            setPanel("none");
+          }}
+        />
+      )}
+
       {/* composer */}
       <form
         onSubmit={handleSend}
         className="flex items-center gap-2 border-t border-neutral-200 px-4 py-3 dark:border-neutral-800"
       >
+        <button
+          type="button"
+          aria-label="이모티콘"
+          onClick={() => setPanel((p) => (p === "emoji" ? "none" : "emoji"))}
+          className={`shrink-0 rounded-full p-2 transition ${
+            panel === "emoji" ? "bg-blush text-love" : "text-neutral-400"
+          }`}
+        >
+          <Smile size={22} />
+        </button>
+        <button
+          type="button"
+          aria-label="게임"
+          onClick={() => setPanel((p) => (p === "game" ? "none" : "game"))}
+          className={`shrink-0 rounded-full p-2 transition ${
+            panel === "game" ? "bg-blush text-love" : "text-neutral-400"
+          }`}
+        >
+          <Gamepad2 size={22} />
+        </button>
         <input
           value={text}
           onChange={(e) => setText(e.target.value)}

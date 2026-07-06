@@ -90,6 +90,32 @@ create table if not exists public.bucket_items (
 create index if not exists bucket_items_couple_idx
   on public.bucket_items (couple_id, sort_index);
 
+-- map_regions : scratch travel map — one row per visited 시군구
+create table if not exists public.map_regions (
+  id          uuid primary key default gen_random_uuid(),
+  couple_id   uuid not null references public.couples (id) on delete cascade,
+  region_code text not null,                        -- KOSTAT municipality code
+  region_name text,
+  photo_url   text,                                 -- R2 photo used as the region fill
+  visited_at  date,
+  created_at  timestamptz not null default now(),
+  unique (couple_id, region_code)
+);
+create index if not exists map_regions_couple_idx
+  on public.map_regions (couple_id);
+
+-- partner_notes : notes about your partner (optionally private to the author)
+create table if not exists public.partner_notes (
+  id         uuid primary key default gen_random_uuid(),
+  couple_id  uuid not null references public.couples (id) on delete cascade,
+  author_id  uuid not null references auth.users (id) on delete cascade,
+  content    text not null,
+  is_private boolean not null default false,
+  created_at timestamptz not null default now()
+);
+create index if not exists partner_notes_couple_idx
+  on public.partner_notes (couple_id, created_at);
+
 -- gallery_photos : pointers to heavy media stored in Cloudflare R2
 create table if not exists public.gallery_photos (
   id           uuid primary key default gen_random_uuid(),
@@ -106,6 +132,15 @@ create table if not exists public.gallery_photos (
 -- ---------------------------------------------------------------------
 alter table public.users
   add column if not exists google_ics_url text;
+-- life-info profile fields (MBTI, blood type, hometown, birth, schools)
+alter table public.users add column if not exists mbti text;
+alter table public.users add column if not exists blood_type text;
+alter table public.users add column if not exists hometown text;
+alter table public.users add column if not exists birth_date date;
+alter table public.users add column if not exists birth_time text;
+alter table public.users add column if not exists school_elementary text;
+alter table public.users add column if not exists school_middle text;
+alter table public.users add column if not exists school_high text;
 alter table public.calendar_events
   add column if not exists sort_index integer not null default 0;
 alter table public.calendar_events
@@ -150,6 +185,8 @@ alter table public.gallery_photos     enable row level security;
 alter table public.push_subscriptions enable row level security;
 alter table public.messages           enable row level security;
 alter table public.bucket_items       enable row level security;
+alter table public.map_regions        enable row level security;
+alter table public.partner_notes      enable row level security;
 
 -- ---------------------------------------------------------------------
 -- 4. Policies
@@ -261,6 +298,46 @@ create policy "bucket_items_all_own"
   to authenticated
   using (couple_id = public.current_couple_id())
   with check (couple_id = public.current_couple_id());
+
+-- ===== map_regions ==================================================
+drop policy if exists "map_regions_all_own" on public.map_regions;
+create policy "map_regions_all_own"
+  on public.map_regions for all
+  to authenticated
+  using (couple_id = public.current_couple_id())
+  with check (couple_id = public.current_couple_id());
+
+-- ===== partner_notes ================================================
+-- Private notes are visible only to their author; shared notes to the couple.
+drop policy if exists "partner_notes_select" on public.partner_notes;
+create policy "partner_notes_select"
+  on public.partner_notes for select
+  to authenticated
+  using (
+    couple_id = public.current_couple_id()
+    and (not is_private or author_id = auth.uid())
+  );
+
+drop policy if exists "partner_notes_insert" on public.partner_notes;
+create policy "partner_notes_insert"
+  on public.partner_notes for insert
+  to authenticated
+  with check (
+    couple_id = public.current_couple_id() and author_id = auth.uid()
+  );
+
+drop policy if exists "partner_notes_update" on public.partner_notes;
+create policy "partner_notes_update"
+  on public.partner_notes for update
+  to authenticated
+  using (author_id = auth.uid())
+  with check (author_id = auth.uid());
+
+drop policy if exists "partner_notes_delete" on public.partner_notes;
+create policy "partner_notes_delete"
+  on public.partner_notes for delete
+  to authenticated
+  using (author_id = auth.uid());
 
 -- ===== push_subscriptions ===========================================
 -- A user manages only their own push subscriptions. The cron job that sends
@@ -390,6 +467,14 @@ begin
       and schemaname = 'public' and tablename = 'bucket_items'
   ) then
     alter publication supabase_realtime add table public.bucket_items;
+  end if;
+
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime'
+      and schemaname = 'public' and tablename = 'map_regions'
+  ) then
+    alter publication supabase_realtime add table public.map_regions;
   end if;
 end $$;
 

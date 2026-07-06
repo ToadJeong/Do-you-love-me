@@ -32,7 +32,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#C8546B",
+  themeColor: "#C25E75",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -59,7 +59,7 @@ export default async function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-full flex flex-col bg-white text-neutral-900 dark:bg-[#14100f] dark:text-neutral-100">
+      <body className="min-h-full flex flex-col bg-cream text-[#3d2f2a] dark:bg-[#14100f] dark:text-neutral-100">
         <AuthProvider userId={userId} profile={profile}>
           {children}
         </AuthProvider>

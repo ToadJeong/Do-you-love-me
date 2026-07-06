@@ -33,6 +33,32 @@ export async function updateProfile(input: {
   return { ok: true };
 }
 
+/** Update the current user's life-info profile (MBTI, birth, schools, …). */
+export async function updateLifeProfile(input: {
+  mbti?: string;
+  blood_type?: string;
+  hometown?: string;
+  birth_date?: string;
+  birth_time?: string;
+  school_elementary?: string;
+  school_middle?: string;
+  school_high?: string;
+}): Promise<SettingsResult> {
+  const { supabase, user } = await requireUser();
+  if (!user) return { ok: false, error: "로그인이 필요해요." };
+
+  const patch: Record<string, string | null> = {};
+  for (const [k, v] of Object.entries(input)) {
+    patch[k] = typeof v === "string" && v.trim() ? v.trim() : null;
+  }
+
+  const { error } = await supabase.from("users").update(patch).eq("id", user.id);
+  if (error) return { ok: false, error: "저장에 실패했어요." };
+
+  revalidatePath("/profile");
+  return { ok: true };
+}
+
 /** Connect/disconnect the user's Google Calendar private iCal (ICS) URL. */
 export async function updateGoogleIcsUrl(
   url: string,

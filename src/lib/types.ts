@@ -36,6 +36,33 @@ export interface AppUser {
   nickname: string | null;
   profile_image_url: string | null;
   google_ics_url: string | null;
+  mbti: string | null;
+  blood_type: string | null;
+  hometown: string | null;
+  birth_date: string | null;
+  birth_time: string | null;
+  school_elementary: string | null;
+  school_middle: string | null;
+  school_high: string | null;
+  created_at: string;
+}
+
+export interface MapRegion {
+  id: string;
+  couple_id: string;
+  region_code: string;
+  region_name: string | null;
+  photo_url: string | null;
+  visited_at: string | null;
+  created_at: string;
+}
+
+export interface PartnerNote {
+  id: string;
+  couple_id: string;
+  author_id: string;
+  content: string;
+  is_private: boolean;
   created_at: string;
 }
 

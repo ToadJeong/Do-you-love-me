@@ -23,6 +23,13 @@ export default async function SettingsPage() {
     <main className="mx-auto w-full max-w-md px-6 py-8">
       <h1 className="mb-6 text-2xl font-semibold tracking-tight">설정</h1>
 
+      <a
+        href="/profile"
+        className="mb-8 flex items-center justify-between rounded-2xl bg-blush px-4 py-3.5 text-sm font-medium text-love md:hidden"
+      >
+        우리 프로필 (MBTI · 혈액형 · 인생정보) <span>→</span>
+      </a>
+
       <SettingsForm profile={profile} couple={couple} />
 
       <div className="mt-8 flex flex-col gap-8">

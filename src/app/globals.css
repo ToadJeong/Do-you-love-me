@@ -4,20 +4,22 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  /* Brand palette (CI) — see design/brand-keyvisual.html */
-  --color-blush: #fdeee9; /* Blush Cream — tints, selected states */
-  --color-rose: #ef8f9b; /* Petal Rose  — soft accents, gradients */
-  --color-love: #c8546b; /* Love Red    — primary actions, active nav */
-  --color-love-dark: #b0455c; /* pressed / hover for Love Red */
-  --color-plum: #46272f; /* Plum Ink    — headings on light bg */
+  /* Brand palette — 연핑크 × 연베이지 (soft pink × soft beige) */
+  --color-blush: #fbe7eb; /* 연핑크 tint — selected states, chips */
+  --color-rose: #f2b8c6; /* 연핑크 — soft accents, gradients */
+  --color-love: #c25e75; /* primary pink — actions, active nav */
+  --color-love-dark: #a94b61; /* pressed / hover */
+  --color-plum: #4a2b33; /* deep ink for headings */
+  --color-cream: #faf5ec; /* 연베이지 — app background */
+  --color-beige: #f1e7d7; /* 연베이지 deep — cards/sections tint */
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 body {
-  background: #ffffff;
-  color: #171717;
+  background: #faf5ec;
+  color: #3d2f2a;
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
