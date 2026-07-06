@@ -14,7 +14,7 @@ export default function LoginPage() {
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center px-6">
       <div className="mb-10 text-center">
-        <h1 className="text-3xl font-semibold tracking-tight">Do you love me</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">럽노트</h1>
         <p className="mt-2 text-sm text-neutral-500">우리 둘만의 기록 공간</p>
       </div>
 

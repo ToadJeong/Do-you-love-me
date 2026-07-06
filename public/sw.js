@@ -22,7 +22,7 @@ self.addEventListener("activate", (event) => {
 
 // --- Web Push -------------------------------------------------------------
 self.addEventListener("push", (event) => {
-  let data = { title: "Do you love me 💕", body: "", url: "/" };
+  let data = { title: "럽노트 💕", body: "", url: "/" };
   try {
     if (event.data) data = { ...data, ...event.data.json() };
   } catch {

@@ -8,6 +8,7 @@ import {
   updateProfile,
   updateCoupleBackground,
   updateCoupleStartDate,
+  updateGoogleIcsUrl,
 } from "@/app/actions/settings";
 import type { AppUser, Couple } from "@/lib/types";
 
@@ -19,6 +20,7 @@ interface Props {
 export function SettingsForm({ profile, couple }: Props) {
   const router = useRouter();
   const [nickname, setNickname] = useState(profile.nickname ?? "");
+  const [icsUrl, setIcsUrl] = useState(profile.google_ics_url ?? "");
   const [startDate, setStartDate] = useState(couple.start_date);
   const [avatar, setAvatar] = useState(profile.profile_image_url);
   const [bg, setBg] = useState(couple.main_bg_url);
@@ -90,6 +92,15 @@ export function SettingsForm({ profile, couple }: Props) {
     start(async () => {
       const res = await updateCoupleStartDate(startDate);
       setMsg(res.ok ? "저장되었어요." : res.error);
+      if (res.ok) router.refresh();
+    });
+  }
+
+  function saveIcsUrl() {
+    setMsg(null);
+    start(async () => {
+      const res = await updateGoogleIcsUrl(icsUrl);
+      setMsg(res.ok ? "구글 캘린더를 연결했어요." : res.error);
       if (res.ok) router.refresh();
     });
   }
@@ -199,6 +210,34 @@ export function SettingsForm({ profile, couple }: Props) {
             onChange={(e) => e.target.files?.[0] && uploadBg(e.target.files[0])}
           />
         </div>
+      </section>
+
+      {/* google calendar */}
+      <section>
+        <label className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
+          구글 캘린더 연결 (읽기 전용 오버레이)
+        </label>
+        <div className="mt-2 flex gap-2">
+          <input
+            type="url"
+            value={icsUrl}
+            onChange={(e) => setIcsUrl(e.target.value)}
+            placeholder="https://calendar.google.com/…/basic.ics"
+            className="flex-1 rounded-xl border border-neutral-300 px-4 py-2.5 text-sm outline-none focus:border-love dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+          />
+          <button
+            type="button"
+            onClick={saveIcsUrl}
+            className="rounded-xl bg-love px-4 text-sm font-medium text-white transition hover:bg-love-dark"
+          >
+            저장
+          </button>
+        </div>
+        <p className="mt-1.5 text-xs text-neutral-400">
+          구글 캘린더 → 설정 → 내 캘린더 → 캘린더 통합 → &quot;iCal 형식의 비공개
+          주소&quot;를 복사해 붙여넣으면 캘린더에 파란 점으로 표시됩니다. (비워두면
+          연결 해제)
+        </p>
       </section>
 
       {/* invite code */}

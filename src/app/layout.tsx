@@ -16,13 +16,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Do you love me",
+  title: "럽노트 · LoveNote",
   description: "우리 둘만의 D-Day · 캘린더 · 갤러리",
   manifest: "/manifest.webmanifest",
-  applicationName: "Do you love me",
+  applicationName: "럽노트",
   appleWebApp: {
     capable: true,
-    title: "Do you love me",
+    title: "럽노트",
     statusBarStyle: "black-translucent",
   },
   icons: {

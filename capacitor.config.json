@@ -1,6 +1,6 @@
 {
   "appId": "me.doyoulove.app",
-  "appName": "Do you love me",
+  "appName": "럽노트",
   "webDir": "public",
   "server": {
     "url": "https://your-app.vercel.app",

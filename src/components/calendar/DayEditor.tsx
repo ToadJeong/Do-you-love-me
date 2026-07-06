@@ -20,6 +20,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useCalendarStore } from "@/store/useCalendarStore";
+import { useExternalStore } from "@/store/useExternalStore";
 import { DayPhotos } from "./DayPhotos";
 import { EVENT_STYLES, EVENT_TYPE_ORDER } from "@/lib/eventStyle";
 import {
@@ -163,6 +164,12 @@ export function DayEditor({ date, onClose, enableDnd = false }: Props) {
             a.created_at.localeCompare(b.created_at),
         ),
     [allEvents, dateISO],
+  );
+
+  const externalEvents = useExternalStore((s) => s.events);
+  const googleEvents = useMemo(
+    () => externalEvents.filter((e) => e.event_date === dateISO),
+    [externalEvents, dateISO],
   );
 
   const [type, setType] = useState<CalendarEventType>("schedule");
@@ -325,6 +332,24 @@ export function DayEditor({ date, onClose, enableDnd = false }: Props) {
         </DndContext>
       ) : (
         <p className="mb-5 text-sm text-neutral-400">아직 기록이 없어요.</p>
+      )}
+
+      {googleEvents.length > 0 && (
+        <div className="mb-5">
+          <p className="mb-2 flex items-center gap-1.5 text-xs font-medium text-[#4285F4]">
+            <span className="h-2 w-2 rounded-full bg-[#4285F4]" /> Google 캘린더
+          </p>
+          <ul className="flex flex-col gap-1.5">
+            {googleEvents.map((g) => (
+              <li
+                key={g.id}
+                className="rounded-lg border border-dashed border-neutral-300 px-3 py-2 text-sm text-neutral-600 dark:border-neutral-700 dark:text-neutral-300"
+              >
+                {g.title}
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
 
       <DayPhotos dateISO={dateISO} />

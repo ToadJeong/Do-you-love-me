@@ -35,7 +35,14 @@ export interface AppUser {
   couple_id: string | null;
   nickname: string | null;
   profile_image_url: string | null;
+  google_ics_url: string | null;
   created_at: string;
+}
+
+export interface ExternalEvent {
+  id: string;
+  event_date: string; // ISO date
+  title: string;
 }
 
 export interface CalendarEvent {

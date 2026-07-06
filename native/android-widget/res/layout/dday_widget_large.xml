@@ -37,7 +37,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
-        android:text="Do you love me 💕"
+        android:text="럽노트 💕"
         android:textColor="#FFFFFFFF"
         android:textSize="12sp"
         android:alpha="0.75" />

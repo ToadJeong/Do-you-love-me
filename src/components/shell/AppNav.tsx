@@ -39,7 +39,7 @@ export function AppNav() {
         <Link href="/" className="mb-8 flex items-center gap-2 px-2">
           <Heart size={20} className="fill-love text-love" />
           <span className="font-serif text-lg font-semibold text-plum dark:text-rose">
-            Do you love me
+            럽노트
           </span>
         </Link>
         <nav className="flex flex-col gap-1">

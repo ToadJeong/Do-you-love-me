@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import {
   addMonths,
   eachDayOfInterval,
@@ -16,6 +16,7 @@ import {
 } from "date-fns";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { useCalendarStore } from "@/store/useCalendarStore";
+import { useExternalStore } from "@/store/useExternalStore";
 import { EVENT_STYLES } from "@/lib/eventStyle";
 import { fetchMonthEvents } from "@/app/actions/events";
 import type { CalendarEvent, CalendarEventType } from "@/lib/types";
@@ -56,6 +57,31 @@ export function MonthCalendar({ initialEvents }: Props) {
       mergeRange(from, to, fetched);
     });
   }
+
+  // Google Calendar overlay for the visible month (read-only).
+  const setExternal = useExternalStore((s) => s.setEvents);
+  const external = useExternalStore((s) => s.events);
+  useEffect(() => {
+    const from = format(startOfWeek(startOfMonth(cursor)), "yyyy-MM-dd");
+    const to = format(endOfWeek(endOfMonth(cursor)), "yyyy-MM-dd");
+    let active = true;
+    fetch(`/api/google/events?from=${from}&to=${to}`)
+      .then((r) => (r.ok ? r.json() : { events: [] }))
+      .then((d) => {
+        if (active) setExternal(d.events ?? []);
+      })
+      .catch(() => {
+        if (active) setExternal([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, [cursor, setExternal]);
+
+  const externalDates = useMemo(
+    () => new Set(external.map((e) => e.event_date)),
+    [external],
+  );
 
   const days = useMemo(() => {
     const start = startOfWeek(startOfMonth(cursor));
@@ -143,6 +169,12 @@ export function MonthCalendar({ initialEvents }: Props) {
                         className={`h-1.5 w-1.5 rounded-full ${EVENT_STYLES[t].dot}`}
                       />
                     ))}
+                  {externalDates.has(key) && (
+                    <span
+                      className="h-1.5 w-1.5 rounded-full bg-[#4285F4]"
+                      title="Google 캘린더"
+                    />
+                  )}
                 </span>
               </button>
             );

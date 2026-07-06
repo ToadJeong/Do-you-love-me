@@ -33,6 +33,26 @@ export async function updateProfile(input: {
   return { ok: true };
 }
 
+/** Connect/disconnect the user's Google Calendar private iCal (ICS) URL. */
+export async function updateGoogleIcsUrl(
+  url: string,
+): Promise<SettingsResult> {
+  const { supabase, user } = await requireUser();
+  if (!user) return { ok: false, error: "로그인이 필요해요." };
+
+  const trimmed = url.trim();
+  if (trimmed && !/^https:\/\/.+/i.test(trimmed)) {
+    return { ok: false, error: "https:// 로 시작하는 iCal 주소를 입력해 주세요." };
+  }
+
+  const { error } = await supabase
+    .from("users")
+    .update({ google_ics_url: trimmed || null })
+    .eq("id", user.id);
+  if (error) return { ok: false, error: "저장에 실패했어요." };
+  return { ok: true };
+}
+
 /** Update the couple's D-Day start date (처음 만난 날). */
 export async function updateCoupleStartDate(
   startDate: string,

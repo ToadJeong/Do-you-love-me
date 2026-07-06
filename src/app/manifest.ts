@@ -3,8 +3,8 @@ import type { MetadataRoute } from "next";
 /** Web app manifest (served at /manifest.webmanifest). */
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Do you love me",
-    short_name: "DoULoveMe",
+    name: "럽노트 · LoveNote",
+    short_name: "럽노트",
     description: "우리 둘만의 D-Day · 캘린더 · 갤러리",
     start_url: "/",
     scope: "/",

@@ -37,6 +37,7 @@ create table if not exists public.users (
                       references public.couples (id) on delete cascade,
   nickname          text,
   profile_image_url text,
+  google_ics_url    text,                            -- private Google Calendar iCal URL (overlay)
   created_at        timestamptz not null default now()
 );
 
@@ -103,6 +104,8 @@ create table if not exists public.gallery_photos (
 -- ---------------------------------------------------------------------
 -- 1b. Idempotent upgrades (safe to re-run on an existing database)
 -- ---------------------------------------------------------------------
+alter table public.users
+  add column if not exists google_ics_url text;
 alter table public.calendar_events
   add column if not exists sort_index integer not null default 0;
 alter table public.calendar_events
