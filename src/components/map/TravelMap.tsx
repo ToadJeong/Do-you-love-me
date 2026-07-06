@@ -104,28 +104,42 @@ export function TravelMap({ initialRegions }: { initialRegions: MapRegion[] }) {
     };
   }, [coupleId]);
 
-  /** client pixel -> svg coords */
-  function toSvg(clientX: number, clientY: number) {
-    const rect = svgRef.current!.getBoundingClientRect();
-    return {
-      x: vb.x + ((clientX - rect.left) / rect.width) * vb.w,
-      y: vb.y + ((clientY - rect.top) / rect.height) * vb.h,
-    };
-  }
-
-  function zoomAt(cx: number, cy: number, factor: number) {
+  /** Zoom keeping the given client-pixel point fixed on screen. */
+  function zoomAtClient(clientX: number, clientY: number, factor: number) {
+    const rect = svgRef.current?.getBoundingClientRect();
+    if (!rect) return;
     setVb((v) => {
+      const cx = v.x + ((clientX - rect.left) / rect.width) * v.w;
+      const cy = v.y + ((clientY - rect.top) / rect.height) * v.h;
       const w = Math.min(MAX_W, Math.max(MIN_W, v.w * factor));
       const h = w * (H / W);
-      const kx = (cx - v.x) / v.w;
-      const ky = (cy - v.y) / v.h;
-      return { x: cx - kx * w, y: cy - ky * h, w, h };
+      return {
+        x: cx - ((cx - v.x) / v.w) * w,
+        y: cy - ((cy - v.y) / v.h) * h,
+        w,
+        h,
+      };
     });
   }
 
   function zoomCenter(factor: number) {
-    zoomAt(vb.x + vb.w / 2, vb.y + vb.h / 2, factor);
+    const rect = svgRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    zoomAtClient(rect.left + rect.width / 2, rect.top + rect.height / 2, factor);
   }
+
+  // Wheel zoom must be a native non-passive listener: React's onWheel is
+  // passive, so preventDefault() (stopping page scroll) wouldn't work.
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    const onWheelNative = (e: WheelEvent) => {
+      e.preventDefault();
+      zoomAtClient(e.clientX, e.clientY, e.deltaY > 0 ? 1.18 : 1 / 1.18);
+    };
+    svg.addEventListener("wheel", onWheelNative, { passive: false });
+    return () => svg.removeEventListener("wheel", onWheelNative);
+  }, []);
 
   function zoomToSeoul() {
     const seoul = regions.filter((r) => r.sido === "11");
@@ -154,8 +168,7 @@ export function TravelMap({ initialRegions }: { initialRegions: MapRegion[] }) {
       const [a, b] = [...pts.values()];
       const dist = Math.hypot(a.x - b.x, a.y - b.y);
       if (pinchDist.current != null && dist > 0) {
-        const mid = toSvg((a.x + b.x) / 2, (a.y + b.y) / 2);
-        zoomAt(mid.x, mid.y, pinchDist.current / dist);
+        zoomAtClient((a.x + b.x) / 2, (a.y + b.y) / 2, pinchDist.current / dist);
       }
       pinchDist.current = dist;
       moved.current = true;
@@ -174,10 +187,6 @@ export function TravelMap({ initialRegions }: { initialRegions: MapRegion[] }) {
   function onPointerUp(e: React.PointerEvent) {
     pointers.current.delete(e.pointerId);
     if (pointers.current.size < 2) pinchDist.current = null;
-  }
-  function onWheel(e: React.WheelEvent) {
-    const pt = toSvg(e.clientX, e.clientY);
-    zoomAt(pt.x, pt.y, e.deltaY > 0 ? 1.18 : 1 / 1.18);
   }
 
   function handleRegionClick(r: RegionShape) {
@@ -288,7 +297,6 @@ export function TravelMap({ initialRegions }: { initialRegions: MapRegion[] }) {
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
           onPointerCancel={onPointerUp}
-          onWheel={onWheel}
         >
           <defs>
             {photoRegions.map((v) => (

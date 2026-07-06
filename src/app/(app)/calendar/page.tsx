@@ -1,13 +1,7 @@
 import { redirect } from "next/navigation";
-import {
-  endOfMonth,
-  endOfWeek,
-  format,
-  startOfMonth,
-  startOfWeek,
-} from "date-fns";
+import { format } from "date-fns";
 import { getCurrentUser } from "@/lib/auth";
-import { getEventsInRange } from "@/lib/couples";
+import { fetchMonthEvents } from "@/app/actions/events";
 import { MonthCalendar } from "@/components/calendar/MonthCalendar";
 
 export default async function CalendarPage() {
@@ -16,10 +10,7 @@ export default async function CalendarPage() {
     redirect("/onboarding");
   }
 
-  const now = new Date();
-  const from = format(startOfWeek(startOfMonth(now)), "yyyy-MM-dd");
-  const to = format(endOfWeek(endOfMonth(now)), "yyyy-MM-dd");
-  const events = await getEventsInRange(from, to);
+  const events = await fetchMonthEvents(format(new Date(), "yyyy-MM-dd"));
 
   return (
     <main className="mx-auto w-full max-w-md px-4 py-8 md:max-w-5xl md:px-8">

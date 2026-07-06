@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   EMOTICON_SETS,
   EMOTICON_EMOTIONS,
@@ -74,13 +74,30 @@ export const GAME_RES = {
   dice: /^\[\[game:dice:([1-6])\]\]$/,
   bal: /^\[\[game:bal:([a-z0-9-]+):(.+)\|(.+)\|(.+)\]\]$/,
   bala: /^\[\[game:bala:([a-z0-9-]+):(A|B)\]\]$/,
+  timer: /^\[\[game:timer:([a-z0-9-]+)\]\]$/,
+  timerr: /^\[\[game:timerr:([a-z0-9-]+):(\d+)\]\]$/,
+  ladder: /^\[\[game:ladder:([a-z0-9-]+):(.+)\]\]$/,
+  ladderp: /^\[\[game:ladderp:([a-z0-9-]+):([1-4])\]\]$/,
+  pick: /^\[\[game:pick:(나|상대):(.+)\]\]$/,
 };
 
-export function isSpecial(content: string): boolean {
-  return (
-    EMO_RE.test(content) ||
-    Object.values(GAME_RES).some((re) => re.test(content))
-  );
+const PENALTIES = [
+  "설거지 담당",
+  "커피 사기",
+  "5분 마사지 해주기",
+  "소원 하나 들어주기",
+  "저녁 메뉴 정하기 포기",
+  "애교 한 번 부리기",
+  "다음 데이트 코스 짜기",
+  "아이스크림 사기",
+];
+const penalty = () => PENALTIES[Math.floor(Math.random() * PENALTIES.length)];
+
+/** Deterministic 1-4 from a game id — neither player controls the outcome. */
+function losingLine(gameId: string): number {
+  let h = 0;
+  for (const ch of gameId) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return (h % 4) + 1;
 }
 
 export function randomDice(): string {
@@ -96,23 +113,131 @@ export function newBalance(): string {
 }
 
 export function GameMenu({ onSend }: { onSend: (content: string) => void }) {
+  const gid = () => crypto.randomUUID().slice(0, 8);
   const items = [
     { label: "가위바위보 ✊", make: newRps },
     { label: "주사위 🎲", make: randomDice },
     { label: "밸런스게임 ⚖️", make: newBalance },
+    { label: "10초 맞추기 ⏱️", make: () => `[[game:timer:${gid()}]]` },
+    { label: "사다리 타기 🪜", make: () => `[[game:ladder:${gid()}:${penalty()}]]` },
+    {
+      label: "복불복 뽑기 🎰",
+      make: () =>
+        `[[game:pick:${Math.random() < 0.5 ? "나" : "상대"}:${penalty()}]]`,
+    },
   ];
   return (
-    <div className="flex gap-2 border-t border-neutral-200 bg-white px-3 py-2.5 dark:border-neutral-800 dark:bg-neutral-900">
+    <div className="grid grid-cols-3 gap-2 border-t border-neutral-200 bg-white px-3 py-2.5 dark:border-neutral-800 dark:bg-neutral-900">
       {items.map((g) => (
         <button
           key={g.label}
           type="button"
           onClick={() => onSend(g.make())}
-          className="flex-1 rounded-xl bg-blush py-2.5 text-sm font-medium text-love transition active:scale-95 dark:bg-love/15"
+          className="rounded-xl bg-blush py-2.5 text-[13px] font-medium text-love transition active:scale-95 dark:bg-love/15"
         >
           {g.label}
         </button>
       ))}
+    </div>
+  );
+}
+
+/* ---------- 10초 맞추기 (timer stops being visible after 3s) ---------- */
+
+function TimerCard({
+  gameId,
+  myId,
+  all,
+  onSend,
+}: {
+  gameId: string;
+  myId: string;
+  all: Message[];
+  onSend: (content: string) => void;
+}) {
+  const [startAt, setStartAt] = useState<number | null>(null);
+  const [shown, setShown] = useState("0.00");
+  const ivRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Clear the ticking interval on stop/unmount.
+  useEffect(() => {
+    return () => {
+      if (ivRef.current) clearInterval(ivRef.current);
+    };
+  }, []);
+
+  const results = all
+    .map((m) => ({ m, match: m.content.match(GAME_RES.timerr) }))
+    .filter((x) => x.match && x.match[1] === gameId)
+    .map((x) => ({ sender: x.m.sender_id, ms: Number(x.match![2]) }));
+  const mine = results.find((r) => r.sender === myId);
+  const theirs = results.find((r) => r.sender !== myId);
+
+  function start() {
+    const t0 = Date.now();
+    setStartAt(t0);
+    ivRef.current = setInterval(() => {
+      const el = Date.now() - t0;
+      // classic rule: the clock hides after 3s — feel the remaining 7s!
+      setShown(el < 3000 ? (el / 1000).toFixed(2) : "?.??");
+    }, 50);
+  }
+
+  function stop() {
+    if (startAt == null) return;
+    if (ivRef.current) clearInterval(ivRef.current);
+    const ms = Date.now() - startAt;
+    setStartAt(null);
+    onSend(`[[game:timerr:${gameId}:${ms}]]`);
+  }
+
+  const fmt = (ms: number) => `${(ms / 1000).toFixed(2)}초`;
+  const diff = (ms: number) => Math.abs(ms - 10000);
+
+  return (
+    <div className="rounded-2xl border border-beige bg-white p-3 text-sm dark:border-neutral-700 dark:bg-neutral-900">
+      <p className="mb-2 font-semibold">⏱️ 10초 맞추기</p>
+      <p className="mb-2 text-xs text-neutral-400">
+        시작 후 감으로 정확히 10초에 멈추세요! (3초 뒤 시계가 숨겨져요)
+      </p>
+      {!mine ? (
+        startAt == null ? (
+          <button
+            type="button"
+            onClick={start}
+            className="w-full rounded-xl bg-love py-2.5 font-medium text-white transition active:scale-95"
+          >
+            시작!
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={stop}
+            className="w-full rounded-xl bg-plum py-2.5 font-medium text-white transition active:scale-95"
+          >
+            멈춰!! <span className="tabular-nums">{shown}</span>
+          </button>
+        )
+      ) : (
+        <p>
+          나: <b className="tabular-nums">{fmt(mine.ms)}</b>
+          {theirs ? (
+            <>
+              {" "}
+              / 상대: <b className="tabular-nums">{fmt(theirs.ms)}</b> —{" "}
+              <span className="font-bold text-love">
+                {diff(mine.ms) === diff(theirs.ms)
+                  ? "무승부!"
+                  : diff(mine.ms) < diff(theirs.ms)
+                    ? "내가 승리! 🎉"
+                    : "상대 승리!"}
+              </span>
+            </>
+          ) : (
+            <span className="text-neutral-400"> / 상대 기다리는 중…</span>
+          )}
+        </p>
+      )}
     </div>
   );
 }
@@ -267,6 +392,92 @@ export function MessageBody({
             )}
           </p>
         )}
+      </div>
+    );
+  }
+
+  // --- 10초 맞추기 ---
+  const timer = c.match(GAME_RES.timer);
+  if (timer) {
+    return <TimerCard gameId={timer[1]} myId={myId} all={all} onSend={onSend} />;
+  }
+  const timerr = c.match(GAME_RES.timerr);
+  if (timerr) {
+    return (
+      <p className="text-xs text-neutral-400">
+        {mine ? "나" : "상대"}: {(Number(timerr[2]) / 1000).toFixed(2)}초에 멈춤 ⏱️
+      </p>
+    );
+  }
+
+  // --- 사다리 타기 (4 lines, 1 losing line derived from the game id) ---
+  const ladder = c.match(GAME_RES.ladder);
+  if (ladder) {
+    const [, gameId, prize] = ladder;
+    const lose = losingLine(gameId);
+    const picks = all
+      .map((m) => ({ m, match: m.content.match(GAME_RES.ladderp) }))
+      .filter((x) => x.match && x.match[1] === gameId)
+      .map((x) => ({ sender: x.m.sender_id, line: Number(x.match![2]) }));
+    const myPick = picks.find((p) => p.sender === myId);
+    const theirPick = picks.find((p) => p.sender !== myId);
+    const done = myPick && theirPick;
+
+    return (
+      <div className={card}>
+        <p className="mb-1 font-semibold">🪜 사다리 타기</p>
+        <p className="mb-2 text-xs text-neutral-400">당첨(1줄): {prize}</p>
+        {!myPick ? (
+          <div className="flex gap-2">
+            {[1, 2, 3, 4].map((n) => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => onSend(`[[game:ladderp:${gameId}:${n}]]`)}
+                className="flex-1 rounded-xl bg-blush py-2 font-bold text-love transition active:scale-90 dark:bg-love/15"
+              >
+                {n}
+              </button>
+            ))}
+          </div>
+        ) : !done ? (
+          <p className="text-neutral-400">
+            나: {myPick.line}번 줄 / 상대 기다리는 중…
+          </p>
+        ) : (
+          <p>
+            나 {myPick.line}번 · 상대 {theirPick!.line}번 → 꽝은 {lose}번!{" "}
+            <span className="font-bold text-love">
+              {myPick.line === lose && theirPick!.line === lose
+                ? "둘 다 당첨?! 😱"
+                : myPick.line === lose
+                  ? `내가 당첨… (${prize}) 😭`
+                  : theirPick!.line === lose
+                    ? `상대 당첨! (${prize}) 🎉`
+                    : "둘 다 무사통과! 🍀"}
+            </span>
+          </p>
+        )}
+      </div>
+    );
+  }
+  const ladderp = c.match(GAME_RES.ladderp);
+  if (ladderp) {
+    return (
+      <p className="text-xs text-neutral-400">
+        {mine ? "나" : "상대"}: 사다리 {ladderp[2]}번 줄 선택
+      </p>
+    );
+  }
+
+  // --- 복불복 뽑기 (instant) ---
+  const pick = c.match(GAME_RES.pick);
+  if (pick) {
+    const who = mine ? pick[1] : pick[1] === "나" ? "상대" : "나";
+    return (
+      <div className={card}>
+        🎰 복불복 결과: <b className="text-love">{who}</b> →{" "}
+        <b>{pick[2]}</b>
       </div>
     );
   }
