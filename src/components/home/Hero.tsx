@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { differenceInCalendarDays, format, parseISO } from "date-fns";
 import { Heart } from "lucide-react";
@@ -10,6 +10,7 @@ import {
   type Anniversary,
 } from "@/lib/dday";
 import { syncDdayToWidget } from "@/lib/widgetSync";
+import { StatusPicker } from "./StatusPicker";
 import type { AppUser } from "@/lib/types";
 
 interface HeroProps {
@@ -35,6 +36,32 @@ function Avatar({ user, fallback }: { user?: AppUser; fallback: string }) {
     <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-white/70 bg-white/20 text-xl font-medium text-white backdrop-blur-sm">
       {fallback}
     </div>
+  );
+}
+
+function StatusChip({
+  user,
+  onClick,
+}: {
+  user?: AppUser;
+  onClick?: () => void;
+}) {
+  const has = user?.status_emoji || user?.status_text;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={!onClick}
+      className={`max-w-[130px] truncate rounded-full px-2.5 py-1 text-[11px] font-medium backdrop-blur-sm ${
+        has ? "bg-white/25 text-white" : "bg-white/15 text-white/70"
+      } ${onClick ? "active:scale-95" : ""}`}
+    >
+      {has
+        ? `${user?.status_emoji ?? ""} ${user?.status_text ?? ""}`.trim()
+        : onClick
+          ? "+ 상태 설정"
+          : "상태 없음"}
+    </button>
   );
 }
 
@@ -67,6 +94,7 @@ export function Hero({
 
   const me = members.find((m) => m.id === myId);
   const partner = members.find((m) => m.id !== myId);
+  const [statusOpen, setStatusOpen] = useState(false);
 
   // Mirror the D-Day into native storage for the Android home-screen widget
   // (no-op on plain web).
@@ -105,6 +133,12 @@ export function Hero({
             </Link>
           )}
         </header>
+
+        {/* mood/status chips */}
+        <div className="mt-3 flex items-center justify-center gap-8">
+          <StatusChip user={me} onClick={() => setStatusOpen(true)} />
+          {partner && <StatusChip user={partner} />}
+        </div>
 
         <div className="flex flex-1 flex-col justify-center">
           {/* D-day */}
@@ -150,6 +184,8 @@ export function Hero({
           )}
         </div>
       </div>
+
+      {statusOpen && <StatusPicker onClose={() => setStatusOpen(false)} />}
     </div>
   );
 }

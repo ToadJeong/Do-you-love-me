@@ -33,6 +33,30 @@ export async function updateProfile(input: {
   return { ok: true };
 }
 
+/** Set my mood/status shown on the home screen (empty = clear). */
+export async function updateStatus(
+  emoji: string,
+  text: string,
+): Promise<SettingsResult> {
+  const { supabase, user } = await requireUser();
+  if (!user) return { ok: false, error: "로그인이 필요해요." };
+
+  const cleanEmoji = emoji.trim().slice(0, 8);
+  const cleanText = text.trim().slice(0, 20);
+  const { error } = await supabase
+    .from("users")
+    .update({
+      status_emoji: cleanEmoji || null,
+      status_text: cleanText || null,
+      status_updated_at: new Date().toISOString(),
+    })
+    .eq("id", user.id);
+  if (error) return { ok: false, error: "저장에 실패했어요." };
+
+  revalidatePath("/", "layout");
+  return { ok: true };
+}
+
 /** Update the current user's life-info profile (MBTI, birth, schools, …). */
 export async function updateLifeProfile(input: {
   mbti?: string;

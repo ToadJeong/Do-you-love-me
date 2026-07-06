@@ -142,6 +142,10 @@ alter table public.users add column if not exists birth_time text;
 alter table public.users add column if not exists school_elementary text;
 alter table public.users add column if not exists school_middle text;
 alter table public.users add column if not exists school_high text;
+-- mood / status indicator (main screen)
+alter table public.users add column if not exists status_emoji text;
+alter table public.users add column if not exists status_text text;
+alter table public.users add column if not exists status_updated_at timestamptz;
 alter table public.calendar_events
   add column if not exists sort_index integer not null default 0;
 alter table public.calendar_events
