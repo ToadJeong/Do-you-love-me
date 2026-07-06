@@ -1,4 +1,4 @@
-# 럽노트 (LoveNote) 💕
+# 럽노트 (LuvNote) 💕
 
 커플을 위한 **D-Day · 공유 캘린더 · 고화질 갤러리** 웹앱 (PWA).
 PC 웹과 모바일을 하나의 코드베이스로 지원하며, 안드로이드는 추후 웹뷰로 감싸 출시할 수 있습니다.
@@ -124,7 +124,7 @@ npm run lint     # ESLint
    npx cap open android      # 또는: cd android && ./gradlew assembleDebug
    ```
 3. Android Studio에서 실행하면 앱이 설치됩니다.
-4. **위젯**: 홈 화면 → 위젯 추가 → "Do you love me". 웹앱을 한 번 열어 로그인하면
+4. **위젯**: 홈 화면 → 위젯 추가 → "럽노트". 웹앱을 한 번 열어 로그인하면
    D-Day가 `@capacitor/preferences` 로 네이티브에 저장되어 위젯에 표시됩니다.
 
 > **위젯 데이터 흐름**: 웹의 `syncDdayToWidget()` → SharedPreferences("CapacitorStorage")

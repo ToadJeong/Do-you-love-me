@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "럽노트 · LoveNote",
+  title: "럽노트 · LuvNote",
   description: "우리 둘만의 D-Day · 캘린더 · 갤러리",
   manifest: "/manifest.webmanifest",
   applicationName: "럽노트",
