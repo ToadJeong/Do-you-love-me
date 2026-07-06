@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- LuvNote splash: cream background + centered brand heart. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="#FAF5EC"/>
+    <item android:gravity="center">
+        <vector
+            android:width="140dp"
+            android:height="140dp"
+            android:viewportWidth="100"
+            android:viewportHeight="100">
+            <path
+                android:pathData="M50,88 C50,88 12,61 12,36 C12,22 22,14 33,14 C41,14 47,19 50,26 C53,19 59,14 67,14 C78,14 88,22 88,36 C88,61 50,88 50,88 Z"
+                android:fillColor="#C25E75" />
+        </vector>
+    </item>
+</layer-list>

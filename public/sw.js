@@ -2,11 +2,14 @@
 // Strategy: cache-first for immutable static assets only. Navigations and API
 // calls always go to the network so we never serve stale authenticated pages.
 
-const CACHE = "dylm-static-v1";
+const CACHE = "luvnote-static-v2";
+const OFFLINE_URL = "/offline.html";
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
-  event.waitUntil(caches.open(CACHE).then((c) => c.addAll(["/icon.svg"])));
+  event.waitUntil(
+    caches.open(CACHE).then((c) => c.addAll(["/icon.svg", OFFLINE_URL])),
+  );
 });
 
 self.addEventListener("activate", (event) => {
@@ -57,6 +60,16 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
+
+  // Navigations: network-first, branded offline page when unreachable.
+  if (request.mode === "navigate") {
+    event.respondWith(
+      fetch(request).catch(() =>
+        caches.match(OFFLINE_URL).then((r) => r ?? Response.error()),
+      ),
+    );
+    return;
+  }
 
   // Only cache build-immutable static assets + the app icon.
   const isStatic =

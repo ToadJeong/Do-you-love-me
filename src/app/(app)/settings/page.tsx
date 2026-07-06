@@ -5,6 +5,7 @@ import { Download } from "lucide-react";
 import { signout } from "../../(auth)/actions";
 import { SettingsForm } from "./SettingsForm";
 import { PushToggle } from "@/components/pwa/PushToggle";
+import { DangerZone } from "./DangerZone";
 import { ThemeToggle } from "@/components/pwa/ThemeToggle";
 import { AccentPicker } from "@/components/pwa/AccentPicker";
 
@@ -52,7 +53,15 @@ export default async function SettingsPage() {
         </section>
       </div>
 
-      <form action={signout} className="mt-10">
+      <DangerZone />
+
+      <p className="mt-8 text-center text-xs text-neutral-400">
+        <a href="/terms" className="underline">이용약관</a>
+        {" · "}
+        <a href="/privacy" className="underline">개인정보처리방침</a>
+      </p>
+
+      <form action={signout} className="mt-6">
         <button
           type="submit"
           className="w-full rounded-xl border border-neutral-300 py-3 text-sm font-medium transition active:scale-[0.99] dark:border-neutral-700"

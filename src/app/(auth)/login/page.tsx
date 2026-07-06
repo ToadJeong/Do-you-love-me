@@ -55,7 +55,12 @@ export default function LoginPage() {
         </button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-neutral-500">
+      <p className="mt-8 text-center text-xs text-neutral-400">
+        가입 시 <a href="/terms" className="underline">이용약관</a>과{" "}
+        <a href="/privacy" className="underline">개인정보처리방침</a>에 동의하게
+        됩니다.
+      </p>
+      <p className="mt-3 text-center text-sm text-neutral-500">
         아직 계정이 없나요?{" "}
         <Link href="/signup" className="font-medium text-neutral-900 underline dark:text-neutral-100">
           회원가입
